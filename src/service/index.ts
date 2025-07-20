@@ -110,8 +110,8 @@ export const getModelListService = ():Promise<MyAwesomeData<Array<types.ChatMode
  * @date: 2025-06-21 13:48
  * @author wuwenqiang
  */
-export const getMyDocumentService = ():Promise<MyAwesomeData<Array<types.DocumentInterface>>> => {
-    return httpRequest.get<Array<types.DocumentInterface>>(api.getDocList);
+export const getMyDocumentService = (directoryId:string):Promise<MyAwesomeData<Array<types.DocumentInterface>>> => {
+    return httpRequest.get<Array<types.DocumentInterface>>(`${api.getDocList}?directoryId=${directoryId}`);
 }
 
 /**
@@ -119,6 +119,6 @@ export const getMyDocumentService = ():Promise<MyAwesomeData<Array<types.Documen
  * @date: 2025-07-12 11:31
  * @author wuwenqiang
  */
-export const deleteMyDocumentService = (docId:string):Promise<MyAwesomeData<number>> => {
-  return httpRequest.delete<number>(api.deleteDoc + docId);
+export const deleteMyDocumentService = (docId:string,directoryId:string):Promise<MyAwesomeData<number>> => {
+  return httpRequest.delete<number>(`${api.deleteDoc}${docId}?directoryId=${directoryId}`);
 }

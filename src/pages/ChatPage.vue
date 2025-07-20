@@ -532,7 +532,7 @@
 	 */
 	const onShowMyDoc = () => {
 		uni.showLoading();
-		getMyDocumentService().then((res)=>{
+		getMyDocumentService(directoryId.value).then((res)=>{
 			showMyDoc.value = true;
 			showMenu.value = false;
 			myDocList.length = 0;
@@ -622,7 +622,7 @@
 	 * @author wuwenqiang
 	 */
 	const sureDeleteDoc = ()=>{
-		deleteMyDocumentService(myDocList[deleteIndex].id).then((res)=>{
+		deleteMyDocumentService(myDocList[deleteIndex].id,directoryId.value).then((res)=>{
 			uni.showToast({
 				duration:2000,
 				position:'center',
