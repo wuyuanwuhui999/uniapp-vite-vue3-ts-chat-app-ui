@@ -1,7 +1,7 @@
 <template>
 	<view class="page-wrapper">
 		<view class="page-header">
-			<image class="icon-back" @click="useBack" :src="icon_back"/>
+			<AvaterComponent size="small"/>
 			<text class="my-favorite">当前接入模型：{{ activeModel }}</text>
 			<view class="menu-wrapper">
 				<image class="icon-small icon-record" @click="onShowMenu" :src="icon_menu"/>
@@ -180,6 +180,7 @@
 	const modelOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const type = ref<string>("");
 	const language = ref<LanguageEnum>(LanguageEnum.zh);
+	const directoryId = ref<string>("public")
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
       'txt': 'text/plain',
@@ -463,7 +464,7 @@
 				const uploadPromises = validFiles.map(file => {
 					return new Promise<void>((resolve, reject) => {
 						uni.uploadFile({
-						url: HOST + api.uploadDoc, // 替换为你的上传接口URL
+						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}`, // 替换为你的上传接口URL
 						filePath: file.path,
 						name: 'file',
 						formData: {

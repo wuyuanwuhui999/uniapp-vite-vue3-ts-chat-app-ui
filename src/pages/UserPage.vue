@@ -61,7 +61,7 @@
 	import type { UserDataType } from '../types';
 	import {updateUserDataService} from '../service';
 	import defaulAvater from '../../static/default_avater.png';
-	import { SexMap } from '../common/config';
+	import { SexMap } from '../common/constant';
 	import icon_arrow from "../../static/icon_arrow.png"
 	import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 

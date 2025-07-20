@@ -1,5 +1,5 @@
 <template>
-	<image @click="useNavigateTo" class="user-avater" :class="sizeMap[size]" :src="store.userData.avater ? HOST + store.userData.avater : defaulAvater"/>
+	<image @click="useNavigateTo" class="user-avater" :class="'user-avater-' + size" :src="store.userData.avater ? HOST + store.userData.avater : defaulAvater"/>
 </template>
 
 <script setup lang="ts">
@@ -8,10 +8,6 @@
 	import {HOST} from '../common/constant';
 	import defaulAvater from '../../static/default_avater.png';
 	const store = useStore();
-	const sizeMap = {
-		middle:'user-avater-middle',
-		big:'user-avater-big'
-	}
 	const {size} = defineProps({
 		size:{
 			type:String,
@@ -33,6 +29,10 @@
 	@import '../theme/size.less';
 	.user-avater{
 	    border-radius: 50%;
+		&.user-avater-small{
+	        width: @small-avater;
+	        height: @small-avater;
+	    }
 	    &.user-avater-middle{
 	        width: @middle-avater;
 	        height: @middle-avater;
