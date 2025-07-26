@@ -102,6 +102,15 @@ export interface DocumentInterface {
 };
 
 export interface OptionInterce {
-		text:string,
-		value:string | number
-	}
+  text:string,
+  value:string | number
+}
+
+// 文档的目录
+export interface DirectoryInterce {
+  id?:string;// 目录id
+  userId?:string;// 用户id
+  directory:string;// 目录名称
+  createTime?:string;// 创建时间
+  updateTime?:string;// 更新时间
+}

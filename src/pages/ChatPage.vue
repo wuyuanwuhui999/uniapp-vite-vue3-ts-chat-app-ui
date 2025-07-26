@@ -124,30 +124,54 @@
 		</view>
 		<OptionsDialog ref="modelOptionsDialog" @onCheck= "onCheckModel" :options="chatModelOption"/>
 		<PopupComponent :text="dialogText" @on-sure="sureDeleteDoc" ref="popupComponent"></PopupComponent>
+		<DialogComponent v-if="showDirDialog" @onClose="showDirDialog = false">
+			<template #header>
+				<text class="dialog-header">选择文件夹</text>
+			</template>
+			<template #content>
+				<view class="directory-wrapper">
+					<view class="create-directory">
+						<text>创建文件夹</text>
+						<image :src="icon_menu_add" class="icon-small"/>
+					</view>
+					<scoll-view scroll-y class="directory-scroll" :show-scrollbar="false">
+						<radio-group class="directory-list">
+							<label class="directory-item" v-for="item in directoryList" :key="item.id">
+								<text class="directory-name">{{ item.directory }}</text>
+								<radio :value="item.id"></radio>
+							</label>
+						</radio-group>
+					</scoll-view>
+					
+				</view>
+			</template>
+		</DialogComponent>
 	</view>
 </template>
 
 <script setup lang="ts">
-    import { reactive, ref, onBeforeUnmount } from 'vue';
-	import icon_back from '../../static/icon_back.png';
+    import { reactive, ref, onBeforeUnmount,defineAsyncComponent } from 'vue';
 	import icon_send from '../../static/icon_send.png';
 	import icon_menu from '../../static/icon_menu.png';
 	import icon_ai from '../../static/icon_ai.png';
 	import icon_chat from '../../static/icon_chat.png';
 	import icon_switch from '../../static/icon_switch.png';
+	import icon_menu_add from '../../static/icon_menu_add.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
-	import type {OptionInterce,DocumentInterface ,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse} from '../types';
+	import type {OptionInterce,DocumentInterface ,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
 	import { HOST, PAGE_SIZE } from '../common/constant';
 	import api from '@/api';
-	import { getChatHistoryService, getModelListService, getMyDocumentService,deleteMyDocumentService }from "../service";
+	import { getChatHistoryService, getModelListService, getMyDocumentService,deleteMyDocumentService,getDirectoryListService }from "../service";
 	import { useStore } from "../stores/useStore";
-	import OptionsDialog from '../components/OptionsDialog.vue';
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
 	import uniSwipeActionItem from '@dcloudio/uni-ui/lib/uni-swipe-action-item/uni-swipe-action-item.vue';
 	import PopupComponent from "../components/PopupComponent.vue";
 	import {LanguageEnum,LanguageMap} from '../enum/index';
+
+	const OptionsDialog = defineAsyncComponent(()=>import('../components/OptionsDialog.vue'))
+	const DialogComponent = defineAsyncComponent(()=>import('../components/DialogComponent.vue'));
 
 	// 响应式状态
 	let socketTask: UniApp.SocketTask | null = null; // WebSocket 实例
@@ -181,6 +205,11 @@
 	const type = ref<string>("");
 	const language = ref<LanguageEnum>(LanguageEnum.zh);
 	const directoryId = ref<string>("public")
+	const showDirDialog = ref<boolean>(false);// 实现上传文档的目录
+	const directoryList = reactive<DirectoryInterce[]>([{
+		directory:"默认文件夹",
+		id:"default"
+	}]);
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
       'txt': 'text/plain',
@@ -425,104 +454,109 @@
 	 * @author wuwenqiang
 	 */	
     const onUploadDoc = () => {
-		uni.chooseFile({
-			count: 9,
-			type: 'file',
-			extension: supportedExtensions,
-			success: async (res: { tempFiles: UploadFile[] }) => {
-			// 过滤出符合类型的文件
-			const validFiles = res.tempFiles.filter(file => {
-				const ext = file.name.split('.').pop()?.toLowerCase() as FileType | undefined;
-				return ext && supportedExtensions.includes(ext);
-			});
-
-			if (validFiles.length === 0) {
-				uni.showToast({
-				icon: 'none',
-				title: '未选择有效的txt或pdf文件',
-				duration: 2000
-				});
-				return;
-			}
-
-			// 显示加载中
-			uni.showLoading({
-				title: '上传中...',
-				mask: true
-			});
-
-			try {
-				uni.addInterceptor('uploadFile', {
-					invoke(options) {
-						options.header = {
-							...options.header,
-							'Authorization': `Bearer ${store.token}`
-						};
-					}
-				});
-				// 使用Promise.all并行上传所有文件
-				const uploadPromises = validFiles.map(file => {
-					return new Promise<void>((resolve, reject) => {
-						uni.uploadFile({
-						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}`, // 替换为你的上传接口URL
-						filePath: file.path,
-						name: 'file',
-						formData: {
-							filename: file.name
-						},
-						success: (uploadRes) => {
-							try {
-							const data: UploadResponse = JSON.parse(uploadRes.data);
-							if (data.status !== "SUCCESS") {
-								reject(new Error(data.message || '上传失败'));
-							} else {
-								uni.showToast({
-									duration: 2000,
-									position: 'center',
-									title: '文件上传成功'
-								});
-								resolve();
-							}
-							} catch (e) {
-								reject(new Error('解析响应数据失败'));
-							}
-						},
-						fail: (err) => {
-							reject(new Error(err.errMsg || '上传请求失败'));
-						}
-						});
-					});
-				});
-
-				// 等待所有文件上传完成
-				await Promise.all(uploadPromises);
-				
-				// 上传成功提示
-				uni.showToast({
-					title: `成功上传${validFiles.length}个文件`,
-					icon: 'success',
-					duration: 2000
-				});
-			} catch (error) {
-				uni.showToast({
-					title: error instanceof Error ? error.message : '上传过程中出错',
-					icon: 'none',
-					duration: 2000
-				});
-			} finally {
-				showMenu.value = false;
-				uni.hideLoading();
-			}
-			},
-			fail: (err) => {
-				uni.showToast({
-					duration: 2000,
-					position: 'center',
-					title: "上传文档失败",
-					icon: 'none'
-				});
-			}
+		showDirDialog.value = true;
+		showMenu.value = false;
+		getDirectoryListService().then((res)=>{
+			directoryList.splice(1,directoryList.length,...res.data);
 		});
+		// uni.chooseFile({
+		// 	count: 9,
+		// 	type: 'file',
+		// 	extension: supportedExtensions,
+		// 	success: async (res: { tempFiles: UploadFile[] }) => {
+		// 	// 过滤出符合类型的文件
+		// 	const validFiles = res.tempFiles.filter(file => {
+		// 		const ext = file.name.split('.').pop()?.toLowerCase() as FileType | undefined;
+		// 		return ext && supportedExtensions.includes(ext);
+		// 	});
+
+		// 	if (validFiles.length === 0) {
+		// 		uni.showToast({
+		// 		icon: 'none',
+		// 		title: '未选择有效的txt或pdf文件',
+		// 		duration: 2000
+		// 		});
+		// 		return;
+		// 	}
+
+		// 	// 显示加载中
+		// 	uni.showLoading({
+		// 		title: '上传中...',
+		// 		mask: true
+		// 	});
+
+		// 	try {
+		// 		uni.addInterceptor('uploadFile', {
+		// 			invoke(options) {
+		// 				options.header = {
+		// 					...options.header,
+		// 					'Authorization': `Bearer ${store.token}`
+		// 				};
+		// 			}
+		// 		});
+		// 		// 使用Promise.all并行上传所有文件
+		// 		const uploadPromises = validFiles.map(file => {
+		// 			return new Promise<void>((resolve, reject) => {
+		// 				uni.uploadFile({
+		// 				url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}`, // 替换为你的上传接口URL
+		// 				filePath: file.path,
+		// 				name: 'file',
+		// 				formData: {
+		// 					filename: file.name
+		// 				},
+		// 				success: (uploadRes) => {
+		// 					try {
+		// 					const data: UploadResponse = JSON.parse(uploadRes.data);
+		// 					if (data.status !== "SUCCESS") {
+		// 						reject(new Error(data.message || '上传失败'));
+		// 					} else {
+		// 						uni.showToast({
+		// 							duration: 2000,
+		// 							position: 'center',
+		// 							title: '文件上传成功'
+		// 						});
+		// 						resolve();
+		// 					}
+		// 					} catch (e) {
+		// 						reject(new Error('解析响应数据失败'));
+		// 					}
+		// 				},
+		// 				fail: (err) => {
+		// 					reject(new Error(err.errMsg || '上传请求失败'));
+		// 				}
+		// 				});
+		// 			});
+		// 		});
+
+		// 		// 等待所有文件上传完成
+		// 		await Promise.all(uploadPromises);
+				
+		// 		// 上传成功提示
+		// 		uni.showToast({
+		// 			title: `成功上传${validFiles.length}个文件`,
+		// 			icon: 'success',
+		// 			duration: 2000
+		// 		});
+		// 	} catch (error) {
+		// 		uni.showToast({
+		// 			title: error instanceof Error ? error.message : '上传过程中出错',
+		// 			icon: 'none',
+		// 			duration: 2000
+		// 		});
+		// 	} finally {
+		// 		showMenu.value = false;
+		// 		uni.hideLoading();
+		// 	}
+		// 	},
+		// 	fail: (err) => {
+		// 		uni.showToast({
+		// 			duration: 2000,
+		// 			position: 'center',
+		// 			title: "上传文档失败",
+		// 			icon: 'none'
+		// 		});
+		// 	}
+		// });
 	};
 
 	/**	
@@ -613,7 +647,6 @@
 		deleteIndex = index;
 		dialogText.value = `是否删除文档：${item.name}`;
 		popupComponent.value?.popup.value?.open('top');
-		console.log("popupComponent.value?.popup.value?=",popupComponent.value?.popup.open("top"))
 	}
 
 	/**	
@@ -922,6 +955,35 @@
 				background-color: @black-background-color;
 				opacity: 0.5;
 			}
+		}
+		.directory-wrapper{
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			.create-directory{
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: @page-padding;
+			}
+			.directory-scroll{
+				flex: 1;
+				height: 0;
+				.directory-list{
+					.directory-item{
+						display: flex;
+						align-items: center;
+						padding: @page-padding;
+						.directory-name{
+							flex: 1;
+							width: 0;
+							text-overflow: ellipsis;
+							white-space: nowrap;
+							overflow: hidden;
+						}
+					}
+				}	
+			}			
 		}
 	}
 </style>

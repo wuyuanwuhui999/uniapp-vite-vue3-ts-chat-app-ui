@@ -64,6 +64,9 @@
             position: relative;
             height: 10%;
             border-bottom: 1rpx solid @page-background-color;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             .icon-close{
                 position: absolute;
                 right: @page-padding;
