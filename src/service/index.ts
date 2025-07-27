@@ -131,3 +131,12 @@ export const deleteMyDocumentService = (docId:string,directoryId:string):Promise
 export const getDirectoryListService = ():Promise<MyAwesomeData<types.DirectoryInterce[]>> => {
   return httpRequest.get<types.DirectoryInterce[]>(api.getDirectoryList);
 }
+
+/**
+ * @description: 创建目录
+ * @date: 2025-07-27 12:42
+ * @author wuwenqiang
+ */
+export const createDirectoryService = (directory:types.DirectoryInterce):Promise<MyAwesomeData<types.DirectoryInterce>> => {
+  return httpRequest.post<types.DirectoryInterce>(api.createDir,directory);
+}

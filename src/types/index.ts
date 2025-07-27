@@ -98,7 +98,8 @@ export interface DocumentInterface {
   userId: string;// 用户id
   createTime: string;//创建时间
   updateTime: string// 更新时间
-  directory:string// 租户id
+  directoryId:string// 目录id
+  directoryName:string;// 目录名称
 };
 
 export interface OptionInterce {

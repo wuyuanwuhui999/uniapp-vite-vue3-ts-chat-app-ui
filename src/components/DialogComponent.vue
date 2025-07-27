@@ -4,7 +4,7 @@
         <view class="dialog-body-wrapper">
             <view class="dialog-header">
                 <slot name="header"/>
-                <image class="icon-close" @click="onClose" :src="icon_close"/>
+                <image class="icon-close icon-small" @click="onClose" :src="icon_close"/>
             </view>
             <slot name="content"></slot>
         </view>
@@ -72,8 +72,6 @@
                 right: @page-padding;
                 top: 50%;
                 transform: translateY(-50%);
-                width: @small-icon-size;
-                height: @small-icon-size;
                 opacity: 0.5;
             }
         }

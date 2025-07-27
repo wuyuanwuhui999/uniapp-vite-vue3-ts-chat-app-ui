@@ -18,7 +18,6 @@ export default {
   getDocList: "/service/ai/getDocList",// 查询我的文档
   deleteDoc: "/service/ai/deleteDoc/",// 查询我的文档
   getDirectoryList: "/service/ai/getDirectoryList",// 查询目录列表
-  isDirExist: "/service/ai/isDirExist",// 判断文档是否存在
   createDir: "/service/ai/createDir",// 创建目录
   renameDir: "/service/ai/renameDir",// 重命名目录
   deleteDir: "/service/ai/deleteDir/",// 删除目录

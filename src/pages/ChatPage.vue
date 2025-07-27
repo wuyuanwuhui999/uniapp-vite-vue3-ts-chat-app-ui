@@ -50,8 +50,8 @@
 								<view class="chat-prompt-wrapper">
 									<view class="chat-prompt">
 										<view class="icon-angle icon-angle-right"></view>
-									<text>{{ item.text }}</text>
-								</view>
+										<text>{{ item.text }}</text>
+									</view>
 								</view>
 								<AvaterComponent/>
 							</template>
@@ -101,48 +101,65 @@
 			</view>
 			<view class="side-mask" @click="onClose"></view>
 		</view>
-		<view class="side-wrapper" v-show="showMyDoc">
-			<view class="pop-wrapper">
+		<DialogComponent v-if="showMyDoc" @onClose="showMyDoc = false">
+			<template #header>
+				<text class="dialog-header">我的文档</text>
+			</template>
+			<template #content>
 				<scroll-view class="pop-scroll-view" scroll-y :show-scrollbar="false">
-					<uni-swipe-action v-if="myDocList.length !== 0">
-						<template v-for="item,index in myDocList" :key="item.id">
-							<uni-swipe-action-item >
-								<view class="doc-item" :key="item.id" v-for="item in myDocList">
-									<text class="doc-time">{{ formatTimeAgo(item.createTime) }}</text>
+					<template v-for="items,index in myDocList" :key="'docList'+index">
+						<text class="directory-name">{{ items[0].directoryName }}</text>
+						<uni-swipe-action>
+							<uni-swipe-action-item v-for="item in items" :key="item.id">
+								<view class="doc-item">
 									<text class="doc-name">{{ item.name }}</text>
+									<text class="doc-time"> {{ formatTimeAgo(item.createTime) }}</text>
 								</view>
 								<template v-slot:right>
 									<view class="delete-button" @click="onDeleteDoc(item,index)"><text class="delete-button-text">删除</text></view>
 								</template>
 							</uni-swipe-action-item>
 							<view class="line" v-if="index < myDocList.length -1"></view>
-						</template>
-					</uni-swipe-action>
+						</uni-swipe-action>
+					</template>
 				</scroll-view>
-			</view>
-			<view class="side-mask" @click="onClose"></view>
-		</view>
+			</template>
+		</DialogComponent>
 		<OptionsDialog ref="modelOptionsDialog" @onCheck= "onCheckModel" :options="chatModelOption"/>
 		<PopupComponent :text="dialogText" @on-sure="sureDeleteDoc" ref="popupComponent"></PopupComponent>
 		<DialogComponent v-if="showDirDialog" @onClose="showDirDialog = false">
 			<template #header>
+				<image :src="icon_menu_add" @click="onCreateDirectory" class="icon-middle icon-add-directory" />
 				<text class="dialog-header">选择文件夹</text>
 			</template>
 			<template #content>
 				<view class="directory-wrapper">
-					<view class="create-directory">
-						<text>创建文件夹</text>
-						<image :src="icon_menu_add" class="icon-small"/>
-					</view>
 					<scoll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-						<radio-group class="directory-list">
+						<radio-group class="directory-list" v-model="directoryId">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
 								<text class="directory-name">{{ item.directory }}</text>
-								<radio :value="item.id"></radio>
+								<radio :checked="directoryId === item.id" :value="item.id"></radio>
 							</label>
 						</radio-group>
 					</scoll-view>
-					
+					<view class="upload-btn-wrapper">
+						<text class="upload-btn upload-sure" @click="onUploadSure">确定</text>
+						<text class="upload-btn upload-cancle" @click="showDirDialog = false">取消</text>
+					</view>
+				</view>
+				<view class="create-dialog" v-if="showCreateDialog">
+					<view class="create-mask" @click="showCreateDialog = false"></view>
+					<view class="create-wrapper">
+						<view class="create-form">
+							<text>文件夹名称</text>
+							<input class="directory-input" v-model="directoryName">
+						</view>
+						<view class="create-btn-wrapper">
+							<text class="create-btn create-sure" @click="onCreateSure">确定</text>
+							<text class="create-btn create-cancle" @click="showCreateDialog = false">取消</text>
+						</view>
+					</view>
+
 				</view>
 			</template>
 		</DialogComponent>
@@ -158,12 +175,12 @@
 	import icon_switch from '../../static/icon_switch.png';
 	import icon_menu_add from '../../static/icon_menu_add.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
-	import type {OptionInterce,DocumentInterface ,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
+	import type {OptionInterce,DocumentInterface,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
 	import { HOST, PAGE_SIZE } from '../common/constant';
 	import api from '@/api';
-	import { getChatHistoryService, getModelListService, getMyDocumentService,deleteMyDocumentService,getDirectoryListService }from "../service";
+	import { getChatHistoryService, getModelListService, getMyDocumentService,deleteMyDocumentService,getDirectoryListService,createDirectoryService }from "../service";
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
 	import uniSwipeActionItem from '@dcloudio/uni-ui/lib/uni-swipe-action-item/uni-swipe-action-item.vue';
@@ -189,7 +206,7 @@
 	const activeModel = ref<string>("");
 	const showMenu = ref<boolean>(false);
 	const showMyDoc = ref<boolean>(false);
-	const myDocList = reactive<Array<DocumentInterface>>([]);
+	const myDocList = reactive<DocumentInterface[][]>([]);
 	const showThink = ref<boolean>(false);// 是否深度思考
 	const thinking = ref<boolean>(false);
 	const dialogText = ref<string>("");// 弹窗的内容
@@ -204,8 +221,10 @@
 	const modelOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const type = ref<string>("");
 	const language = ref<LanguageEnum>(LanguageEnum.zh);
-	const directoryId = ref<string>("public")
+	const directoryId = ref<string>("default")
 	const showDirDialog = ref<boolean>(false);// 实现上传文档的目录
+	const showCreateDialog = ref<boolean>(false);// 创建文件夹弹窗
+	const directoryName = ref<string>("");// 文件夹名称
 	const directoryList = reactive<DirectoryInterce[]>([{
 		directory:"默认文件夹",
 		id:"default"
@@ -459,104 +478,6 @@
 		getDirectoryListService().then((res)=>{
 			directoryList.splice(1,directoryList.length,...res.data);
 		});
-		// uni.chooseFile({
-		// 	count: 9,
-		// 	type: 'file',
-		// 	extension: supportedExtensions,
-		// 	success: async (res: { tempFiles: UploadFile[] }) => {
-		// 	// 过滤出符合类型的文件
-		// 	const validFiles = res.tempFiles.filter(file => {
-		// 		const ext = file.name.split('.').pop()?.toLowerCase() as FileType | undefined;
-		// 		return ext && supportedExtensions.includes(ext);
-		// 	});
-
-		// 	if (validFiles.length === 0) {
-		// 		uni.showToast({
-		// 		icon: 'none',
-		// 		title: '未选择有效的txt或pdf文件',
-		// 		duration: 2000
-		// 		});
-		// 		return;
-		// 	}
-
-		// 	// 显示加载中
-		// 	uni.showLoading({
-		// 		title: '上传中...',
-		// 		mask: true
-		// 	});
-
-		// 	try {
-		// 		uni.addInterceptor('uploadFile', {
-		// 			invoke(options) {
-		// 				options.header = {
-		// 					...options.header,
-		// 					'Authorization': `Bearer ${store.token}`
-		// 				};
-		// 			}
-		// 		});
-		// 		// 使用Promise.all并行上传所有文件
-		// 		const uploadPromises = validFiles.map(file => {
-		// 			return new Promise<void>((resolve, reject) => {
-		// 				uni.uploadFile({
-		// 				url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}`, // 替换为你的上传接口URL
-		// 				filePath: file.path,
-		// 				name: 'file',
-		// 				formData: {
-		// 					filename: file.name
-		// 				},
-		// 				success: (uploadRes) => {
-		// 					try {
-		// 					const data: UploadResponse = JSON.parse(uploadRes.data);
-		// 					if (data.status !== "SUCCESS") {
-		// 						reject(new Error(data.message || '上传失败'));
-		// 					} else {
-		// 						uni.showToast({
-		// 							duration: 2000,
-		// 							position: 'center',
-		// 							title: '文件上传成功'
-		// 						});
-		// 						resolve();
-		// 					}
-		// 					} catch (e) {
-		// 						reject(new Error('解析响应数据失败'));
-		// 					}
-		// 				},
-		// 				fail: (err) => {
-		// 					reject(new Error(err.errMsg || '上传请求失败'));
-		// 				}
-		// 				});
-		// 			});
-		// 		});
-
-		// 		// 等待所有文件上传完成
-		// 		await Promise.all(uploadPromises);
-				
-		// 		// 上传成功提示
-		// 		uni.showToast({
-		// 			title: `成功上传${validFiles.length}个文件`,
-		// 			icon: 'success',
-		// 			duration: 2000
-		// 		});
-		// 	} catch (error) {
-		// 		uni.showToast({
-		// 			title: error instanceof Error ? error.message : '上传过程中出错',
-		// 			icon: 'none',
-		// 			duration: 2000
-		// 		});
-		// 	} finally {
-		// 		showMenu.value = false;
-		// 		uni.hideLoading();
-		// 	}
-		// 	},
-		// 	fail: (err) => {
-		// 		uni.showToast({
-		// 			duration: 2000,
-		// 			position: 'center',
-		// 			title: "上传文档失败",
-		// 			icon: 'none'
-		// 		});
-		// 	}
-		// });
 	};
 
 	/**	
@@ -570,7 +491,17 @@
 			showMyDoc.value = true;
 			showMenu.value = false;
 			myDocList.length = 0;
-			myDocList.push(...res.data);
+			res.data.forEach((aItem)=>{
+				let bItems = myDocList.find((items)=>{
+					return items[0].directoryName === aItem.directoryName;
+				});
+				if(!bItems){
+					bItems = [];
+					myDocList.push(bItems);
+				}
+				bItems.push(aItem);
+			});
+			
 		}).finally(()=>{
 			uni.hideLoading();
 		})
@@ -673,7 +604,144 @@
 	}
 
 	const onSwitchLang = ()=>{
-		language.value = language.value === LanguageEnum.zh ? LanguageEnum.cn : LanguageEnum.zh
+		language.value = language.value === LanguageEnum.zh ? LanguageEnum.en : LanguageEnum.zh
+	}
+
+	const onCreateDirectory = ()=>{
+		showCreateDialog.value = true;
+	}
+
+	const onCreateSure = ()=>{
+		if(!directoryName.value)
+		return uni.showToast({
+			duration:2000,
+			position:'center',
+			title: "请输入文件夹名称"
+		});
+		if(directoryList.find((item)=>item.directory === directoryName.value)){
+			return uni.showToast({
+				duration:2000,
+				position:'center',
+				title: "文件夹名称已存在"
+			});
+		}
+		createDirectoryService({directory:directoryName.value}).then((res)=>{
+			 uni.showToast({
+				duration:2000,
+				position:'center',
+				title: "创建文件夹成功"
+			});
+			directoryList.splice(1,0,res.data);
+			showCreateDialog.value = false;
+		}).catch((res)=>{
+			uni.showToast({
+				duration:2000,
+				position:'center',
+				title: res.msg
+			});
+		})
+	}
+
+	
+	const onUploadSure = ()=>{
+		uni.chooseFile({
+			count: 9,
+			type: 'file',
+			extension: supportedExtensions,
+			success: async (res: { tempFiles: UploadFile[] }) => {
+			// 过滤出符合类型的文件
+			const validFiles = res.tempFiles.filter(file => {
+				const ext = file.name.split('.').pop()?.toLowerCase() as FileType | undefined;
+				return ext && supportedExtensions.includes(ext);
+			});
+
+			if (validFiles.length === 0) {
+				uni.showToast({
+				icon: 'none',
+				title: '未选择有效的txt或pdf文件',
+				duration: 2000
+				});
+				return;
+			}
+
+			// 显示加载中
+			uni.showLoading({
+				title: '上传中...',
+				mask: true
+			});
+
+			try {
+				uni.addInterceptor('uploadFile', {
+					invoke(options) {
+						options.header = {
+							...options.header,
+							'Authorization': `Bearer ${store.token}`
+						};
+					}
+				});
+				// 使用Promise.all并行上传所有文件
+				const uploadPromises = validFiles.map(file => {
+					return new Promise<void>((resolve, reject) => {
+						uni.uploadFile({
+						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}`, // 替换为你的上传接口URL
+						filePath: file.path,
+						name: 'file',
+						formData: {
+							filename: file.name
+						},
+						success: (uploadRes) => {
+							try {
+							const data: UploadResponse = JSON.parse(uploadRes.data);
+							if (data.status !== "SUCCESS") {
+								reject(new Error(data.message || '上传失败'));
+							} else {
+								uni.showToast({
+									duration: 2000,
+									position: 'center',
+									title: '文件上传成功'
+								});
+								resolve();
+							}
+							} catch (e) {
+								reject(new Error('解析响应数据失败'));
+							}
+						},
+						fail: (err) => {
+							reject(new Error(err.errMsg || '上传请求失败'));
+						}
+						});
+					});
+				});
+
+				// 等待所有文件上传完成
+				await Promise.all(uploadPromises);
+				
+				// 上传成功提示
+				uni.showToast({
+					title: `成功上传${validFiles.length}个文件`,
+					icon: 'success',
+					duration: 2000
+				});
+			} catch (error) {
+				uni.showToast({
+					title: error instanceof Error ? error.message : '上传过程中出错',
+					icon: 'none',
+					duration: 2000
+				});
+			} finally {
+				showMenu.value = false;
+				uni.hideLoading();
+			}
+			},
+			fail: (err) => {
+				uni.showToast({
+					duration: 2000,
+					position: 'center',
+					title: "上传文档失败",
+					icon: 'none'
+				});
+			}
+		});
 	}
 </script>
 
@@ -880,86 +948,11 @@
 				}
 			}
 		}
-		.side-wrapper{
-			height: 100vh;
-			width: 100vw;
-			position: absolute;
-			display: flex;
-			.pop-wrapper{
-				width: 70%;
-				background-color: @module-background-color;
-				.pop-scroll-view{
-					height: 100vh;
-					padding: @page-padding;
-					box-sizing: border-box;
-					.history-list{
-						padding: @page-padding;
-						display: flex;
-						flex-direction: column;
-						gap: calc(@page-padding * 2);
-						.chat-item{
-							display: flex;
-							flex-direction: column;
-							gap:  @page-padding;
-							.chat-time{
-								color: @sub-title-color;
-							}
-							.chat-content{
-								display: block;
-								width: 100%;
-								overflow: hidden;
-								text-overflow: ellipsis;
-								white-space: nowrap;
-							}
-						}
-						
-					}
-					.delete-button{
-						display: flex;
-						height: 100%;
-						flex: 1;
-						flex-direction: row;
-						justify-content: center;
-						align-items: center;
-						background-color: @warn-color;
-						margin-left: @page-padding;
-						.delete-button-text{
-							color: @module-background-color;
-							padding: 0 calc(@page-padding * 2);
-						}
-					}
-					.doc-item{
-						display: flex;
-						flex-direction: column;
-						padding-bottom: @page-padding;
-						border-bottom: 1rpx solid @disable-text-color;
-						padding-top: @page-padding;
-						&:last-child{
-							border-bottom: none;
-						}
-						&:first-child{
-							padding-top:0;
-						}
-						.doc-name{
-							flex: 1;
-						}
-						.doc-time{
-							color: @sub-title-color;
-						}
-						
-					}
-				}
-			}
-			.side-mask{
-				flex: 1;
-				background-color: @black-background-color;
-				opacity: 0.5;
-			}
-		}
 		.directory-wrapper{
 			height: 100%;
 			display: flex;
 			flex-direction: column;
+			gap:@page-padding;
 			.create-directory{
 				display: flex;
 				justify-content: space-between;
@@ -983,7 +976,171 @@
 						}
 					}
 				}	
-			}			
+			}	
+			.upload-btn-wrapper{
+				display: flex;
+				gap:@page-padding;
+				padding: @page-padding;
+				.upload-btn{
+					flex: 1;
+					height: @btn-height;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					border-radius: @module-border-radius;
+					&.upload-sure{
+						color: @line-color;
+						border: 1rpx solid @line-color;
+					}
+					&.upload-cancle{
+						border:1rpx solid @disable-text-color;
+					}
+				}
+			}		
+		}
+		.icon-add-directory{
+			position: absolute;
+			left: @page-padding;
+			top: 50%;
+			transform: translateY(-50%);
+			opacity: 0.5;
+		}
+		.create-dialog{
+			width: 100vw;
+			height: 100vh;
+			position: fixed;
+			left: 0;
+			top:0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 1;
+			.create-mask{
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				left: 0;
+				top:0;
+				background-color: @black-background-color;
+				opacity: 0.5;
+			}
+			.create-wrapper{
+				background: @module-background-color;
+				position: relative;
+				z-index: 1;
+				border-radius: @module-border-radius;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				width: 80%;
+				.create-tip{
+					width: 100%;
+					border-bottom: 1rpx solid @disable-text-color;
+					padding:  @page-padding;
+					box-sizing: border-box;
+					margin-bottom: @page-padding;
+					text-align: center;
+				}
+				.create-form{
+					padding: calc(@page-padding * 3) @page-padding;
+					display: flex;
+					gap:@page-padding;
+					width: 100%;
+					align-items: center;
+					box-sizing: border-box;
+					.directory-input{
+						flex: 1;
+						height: @input-height;
+						outline: none;
+						padding: 0 @page-padding;
+						border-radius: @module-border-radius;
+						border: 1rpx solid @disable-text-color;
+					}
+				}
+				
+				.create-btn-wrapper{
+					display: flex;
+					width: 100%;
+					border-top: 1rpx solid @disable-text-color;
+					.create-btn{
+						flex: 1;
+						display: flex;
+						justify-content: center;
+						align-items: center;
+						border-right: 1rpx solid @disable-text-color;
+						box-sizing: border-box;
+						height: @btn-height;
+						&.create-sure{
+							border-right: 1rpx solid @disable-text-color;
+							color:@line-color;
+						}
+					}
+					
+				}
+			}
+		}
+		.pop-scroll-view{
+			height: 100vh;
+			padding: @page-padding;
+			box-sizing: border-box;
+			.history-list{
+				padding: @page-padding;
+				display: flex;
+				flex-direction: column;
+				gap: calc(@page-padding * 2);
+				.chat-item{
+					display: flex;
+					flex-direction: column;
+					gap:  @page-padding;
+					.chat-time{
+						color: @sub-title-color;
+					}
+					.chat-content{
+						display: block;
+						width: 100%;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+				}
+				
+			}
+			.delete-button{
+				display: flex;
+				height: 100%;
+				flex: 1;
+				flex-direction: row;
+				justify-content: center;
+				align-items: center;
+				background-color: @warn-color;
+				margin-left: @page-padding;
+				.delete-button-text{
+					color: @module-background-color;
+					padding: 0 calc(@page-padding * 2);
+				}
+			}
+			.directory-name{
+				padding: @page-padding 0;
+			}
+			.doc-item{
+				padding-bottom: @page-padding;
+				border-bottom: 1rpx solid @disable-text-color;
+				padding-top: @page-padding;
+				&:last-child{
+					border-bottom: none;
+				}
+				&:first-child{
+					padding-top:0;
+				}
+				.doc-name{
+					flex: 1;
+				}
+				.doc-time{
+					color: @sub-title-color;
+					padding-left: @page-padding;
+				}
+				
+			}
 		}
 	}
 </style>
