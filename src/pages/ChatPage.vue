@@ -107,9 +107,9 @@
 			</template>
 			<template #content>
 				<scroll-view class="pop-scroll-view" scroll-y :show-scrollbar="false">
-					<template v-for="items,index in myDocList" :key="'docList'+index">
-						<text class="directory-name">{{ items[0].directoryName }}</text>
-						<uni-swipe-action>
+					<uni-swipe-action>
+						<template v-for="items,index in myDocList" :key="'docList'+index">
+							<text class="directory-name">{{ items[0].directoryName }}</text>
 							<uni-swipe-action-item v-for="item in items" :key="item.id">
 								<view class="doc-item">
 									<text class="doc-name">{{ item.name }}</text>
@@ -120,8 +120,8 @@
 								</template>
 							</uni-swipe-action-item>
 							<view class="line" v-if="index < myDocList.length -1"></view>
-						</uni-swipe-action>
-					</template>
+						</template>
+					</uni-swipe-action>
 				</scroll-view>
 			</template>
 		</DialogComponent>
@@ -1083,6 +1083,11 @@
 			height: 100vh;
 			padding: @page-padding;
 			box-sizing: border-box;
+			.line{
+				height: 1rpx;
+				background-color: @disable-text-color;
+				margin-bottom: @page-padding;
+			}
 			.history-list{
 				padding: @page-padding;
 				display: flex;
@@ -1120,7 +1125,8 @@
 				}
 			}
 			.directory-name{
-				padding: @page-padding 0;
+				padding-bottom: @page-padding;
+				display: block;
 			}
 			.doc-item{
 				padding-bottom: @page-padding;
