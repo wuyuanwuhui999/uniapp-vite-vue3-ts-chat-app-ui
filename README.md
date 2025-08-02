@@ -1,7 +1,7 @@
 
 ## 项目概述
 
-本项目是一个使用uni-vue3-vite-ts+pinia+router构建的音乐混合App。它集成了AI智能聊天功能，并通过Python爬虫程序从第三方音乐网站获取音乐数据。后端接口采用Spring Boot开发。
+本项目是一个使用uni-vue3-vite-ts+pinia+router搭建的ai智能体app，它集成了AI智能聊天功能、rag文档查询，文档上传，后端接口采用Spring Boot+langchain4j+ollama+deepseek+qwen3开发
 
 ## 主要特性
 
@@ -80,14 +80,22 @@ AI与前端结合的实战经验（从接口调用到UI交互）
 ![ai聊天切换模型](选择文档.png)
 =============================界面预览（如果无法预览，请查看项目根目录png文件）==========================   
 
+如果打不开github地址，请用github的镜像地址，例如
+原地址：https://github.com/wuyuanwuhui999/springboot3-app-service 
+镜像地址：https://bgithub.xyz/wuyuanwuhui999/springboot3-app-service  
 
 后端接口项目和sql语句：   
-springboot2旧项目：https://github.com/wuyuanwuhui99/springboot-app-service （密钥丢失无法登录，该不在更新，迁移到wuyuanwuhui999账号下）  
-springboot2旧项目：https://github.com/wuyuanwuhui999/springboot-app-service  
-springboot3新项目：https://github.com/wuyuanwuhui999/springboot3-app-service   
-springboot2旧项目：https://gitee.com/wuyuanwuhui99/springboot-app-service   
-springboot3新项目：https://gitee.com/wuyuanwuhui99/springboot3-app-service   
+github springboot2旧项目：https://github.com/wuyuanwuhui99/springboot-app-service （密钥丢失无法登录，该不在更新，迁移到wuyuanwuhui999账号下）  
+github springboot3新项目：https://github.com/wuyuanwuhui999/springboot3-app-service    
+github fast api版本：https://github.com/wuyuanwuhui999/fast-api-app-service
 
+gitee springboot2旧项目：https://gitee.com/wuyuanwuhui99/springboot-app-service    
+gitee springboot3新项目：https://gitee.com/wuyuanwuhui99/springboot3-app-service    
+gitee fast api版本：https://gitee.com/wuyuanwuhui99/fast-api-app-service
+
+uniapp ai智能体项目参见
+github：https://github.com/wuyuanwuhui999/uniapp-vite-vue3-ts-chat-app-ui
+gitee：https://github.com/wuyuanwuhui99/uniapp-vite-vue3-ts-chat-app-ui
 
 flutter电影项目参见:   
 github旧地址：https://github.com/wuyuanwuhui99/flutter-movie-app-ui   

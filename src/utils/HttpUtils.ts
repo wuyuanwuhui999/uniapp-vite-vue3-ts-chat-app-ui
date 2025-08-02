@@ -115,7 +115,7 @@ class HttpRequest {
 			// 默认header
 			const header = {
                 "content-type": "application/json",
-                "Authorization": this.token
+                "Authorization": `Bearer ${this.token}`
 			}
 			uni.request({
 				method: requestConfig.method,
