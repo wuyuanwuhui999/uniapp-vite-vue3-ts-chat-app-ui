@@ -88,6 +88,7 @@ export interface PayloadInterface {
   type: string;
   prompt: string;
   showThink:boolean;
+  directoryId?:string;
   language:string;
 };
 

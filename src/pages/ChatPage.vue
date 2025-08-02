@@ -75,6 +75,7 @@
 			<view class="type-wrapper">
 				<text class="type-item" :class="{'type-item-active': showThink}" @click="onSwitchThink()">深度思考</text>
 				<text class="type-item" :class="{'type-item-active': type === 'document'}" @click="onCheckType('document')">查询文档</text>
+				<text class="type-item type-item-active" v-if="type === 'document'" @click="onSetDocument()">文档设置</text>
 				<text class="type-item" :class="{'type-item-active': type === 'db'}" @click="onCheckType('db')">查询数据库</text>
 				<view class="type-item type-item-language" @click="onSwitchLang()"><text>{{ language }}</text><image class="icon-small" :src="icon_switch"/></view>
 			</view>
@@ -108,18 +109,18 @@
 			<template #content>
 				<scroll-view class="pop-scroll-view" scroll-y :show-scrollbar="false">
 					<uni-swipe-action>
-						<template v-for="items,index in myDocList" :key="'docList'+index">
+						<template v-for="items,aIndex in myDocList" :key="'docList'+aIndex">
 							<text class="directory-name">{{ items[0].directoryName }}</text>
-							<uni-swipe-action-item v-for="item in items" :key="item.id">
+							<uni-swipe-action-item v-for="item,bIndex in items" :key="item.id">
 								<view class="doc-item">
 									<text class="doc-name">{{ item.name }}</text>
 									<text class="doc-time"> {{ formatTimeAgo(item.createTime) }}</text>
 								</view>
 								<template v-slot:right>
-									<view class="delete-button" @click="onDeleteDoc(item,index)"><text class="delete-button-text">删除</text></view>
+									<view class="delete-button" @click="onDeleteDoc(item,aIndex,bIndex)"><text class="delete-button-text">删除</text></view>
 								</template>
 							</uni-swipe-action-item>
-							<view class="line" v-if="index < myDocList.length -1"></view>
+							<view class="line" v-if="aIndex < myDocList.length -1"></view>
 						</template>
 					</uni-swipe-action>
 				</scroll-view>
@@ -142,9 +143,9 @@
 							</label>
 						</radio-group>
 					</scoll-view>
-					<view class="upload-btn-wrapper">
-						<text class="upload-btn upload-sure" @click="onUploadSure">确定</text>
-						<text class="upload-btn upload-cancle" @click="showDirDialog = false">取消</text>
+					<view class="dialog-btn-wrapper">
+						<text class="dialog-btn dialog-btn-sure" @click="onUploadSure">确定</text>
+						<text class="dialog-btn dialog-btn-cancle" @click="showCheckDocument = false">取消</text>
 					</view>
 				</view>
 				<view class="create-dialog" v-if="showCreateDialog">
@@ -155,11 +156,33 @@
 							<input class="directory-input" v-model="directoryName">
 						</view>
 						<view class="create-btn-wrapper">
-							<text class="create-btn create-sure" @click="onCreateSure">确定</text>
+							<text class="create-btn create-sure" @click="">确定</text>
 							<text class="create-btn create-cancle" @click="showCreateDialog = false">取消</text>
 						</view>
 					</view>
 
+				</view>
+			</template>
+		</DialogComponent>
+
+		<DialogComponent v-if="showCheckDocument" @onClose="showCheckDocument = false">
+			<template #header>
+				<text class="dialog-header">选择文件夹</text>
+			</template>
+			<template #content>
+				<view class="directory-wrapper">
+					<scoll-view scroll-y class="directory-scroll" :show-scrollbar="false">
+						<radio-group class="directory-list" v-model="mDirectoryId">
+							<label class="directory-item" v-for="item in directoryList" :key="item.id">
+								<text class="directory-name">{{ item.directory }}</text>
+								<radio :checked="mDirectoryId === item.id" :value="item.id"></radio>
+							</label>
+						</radio-group>
+					</scoll-view>
+					<view class="dialog-btn-wrapper">
+						<text class="dialog-btn dialog-btn-sure" @click="onSureCheck">确定</text>
+						<text class="dialog-btn dialog-btn-cancle" @click="showCheckDocument = false">取消</text>
+					</view>
 				</view>
 			</template>
 		</DialogComponent>
@@ -199,6 +222,7 @@
 	const total = ref<number>(0);
 	let chatId:string = "";
 	let deleteIndex:number = -1;
+	let deleteDirIndex:number = -1;
 	const popupComponent = ref<null | InstanceType<typeof PopupComponent>>(null);
 	const inputValue = ref<string>("");
 	const store = useStore();
@@ -221,10 +245,12 @@
 	const modelOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const type = ref<string>("");
 	const language = ref<LanguageEnum>(LanguageEnum.zh);
-	const directoryId = ref<string>("default")
+	const directoryId = ref<string>("default");
+	const mDirectoryId = ref<string>("default");// 待确定选择的文件夹
 	const showDirDialog = ref<boolean>(false);// 实现上传文档的目录
 	const showCreateDialog = ref<boolean>(false);// 创建文件夹弹窗
 	const directoryName = ref<string>("");// 文件夹名称
+	const showCheckDocument = ref<boolean>(false);
 	const directoryList = reactive<DirectoryInterce[]>([{
 		directory:"默认文件夹",
 		id:"default"
@@ -275,6 +301,7 @@
 				type:type.value,
 				prompt: inputValue.value.trim(),
 				showThink:showThink.value,
+				directoryId:directoryId.value,
 				language: LanguageMap[language.value],
 			};
 			await connectWebSocket();
@@ -475,9 +502,12 @@
     const onUploadDoc = () => {
 		showDirDialog.value = true;
 		showMenu.value = false;
-		getDirectoryListService().then((res)=>{
-			directoryList.splice(1,directoryList.length,...res.data);
-		});
+		if(directoryList.length === 0){
+			getDirectoryListService().then((res)=>{
+				directoryList.push(...res.data);
+			});
+		}
+		
 	};
 
 	/**	
@@ -574,8 +604,9 @@
 	 * @date: 2025-07-12 13:03
 	 * @author wuwenqiang
 	 */
-	const onDeleteDoc = (item:DocumentInterface,index:number) =>{
+	const onDeleteDoc = (item:DocumentInterface,dirIndex:number,index:number) =>{
 		deleteIndex = index;
+		deleteDirIndex = dirIndex;
 		dialogText.value = `是否删除文档：${item.name}`;
 		popupComponent.value?.popup.value?.open('top');
 	}
@@ -586,7 +617,7 @@
 	 * @author wuwenqiang
 	 */
 	const sureDeleteDoc = ()=>{
-		deleteMyDocumentService(myDocList[deleteIndex].id,directoryId.value).then((res)=>{
+		deleteMyDocumentService(myDocList[deleteDirIndex][deleteIndex].id,directoryId.value).then((res)=>{
 			uni.showToast({
 				duration:2000,
 				position:'center',
@@ -742,6 +773,30 @@
 				});
 			}
 		});
+	}
+
+	/**	
+	 * @description: 选择要查询的文件夹
+	 * @date: 2025-07-12 13:03
+	 * @author wuwenqiang
+	 */
+	const onSetDocument = ()=>{
+		showCheckDocument.value = true;
+		if(directoryList.length === 0){
+			getDirectoryListService().then((res)=>{
+				directoryList.push(...res.data);
+			});
+		}
+	}
+
+	/**	
+	 * @description: 确定选择
+	 * @date: 2025-08-2 12:20
+	 * @author wuwenqiang
+	 */
+	const onSureCheck = ()=>{
+		showCheckDocument.value = false;
+		directoryId.value = mDirectoryId.value;
 	}
 </script>
 
@@ -977,22 +1032,23 @@
 					}
 				}	
 			}	
-			.upload-btn-wrapper{
+			.dialog-btn-wrapper{
 				display: flex;
 				gap:@page-padding;
 				padding: @page-padding;
-				.upload-btn{
+				.dialog-btn{
 					flex: 1;
 					height: @btn-height;
 					display: flex;
 					justify-content: center;
 					align-items: center;
-					border-radius: @module-border-radius;
-					&.upload-sure{
-						color: @line-color;
+					border-radius: @btn-height;
+					&.dialog-btn-sure{
+						color: @module-background-color;
+						background-color: @line-color ;
 						border: 1rpx solid @line-color;
 					}
-					&.upload-cancle{
+					&.dialog-btn-cancle{
 						border:1rpx solid @disable-text-color;
 					}
 				}
