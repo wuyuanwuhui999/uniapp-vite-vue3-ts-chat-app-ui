@@ -1,6 +1,6 @@
 <template>
 	<view class="page-wrapper">
-		<NavigatorTitleComponent title="个人信息"/>
+		<NavigatorTitleComponent :title="store.tenant?.name??'个人信息'"/>
 		<view class="page-body">
 			<view class="module-block">
 				<view class="row">
@@ -29,8 +29,9 @@
 					<image class="icon-arrow" :src="icon_arrow"/>
 				</view>
 			</view>
-			<button class="btn-logout" @click="useLogout">退出登录</button>
-			<view class="btn-update-password" @click="useUpdatePassword">修改密码</view>
+			<button class="btn-user" @click="onTabTenant">切换租户</button>
+			<button class="btn-user" @click="useUpdatePassword">修改密码</button>
+			<button class="btn-user btn-logout" @click="useLogout">退出登录</button>
 		</view>
 		
 		<uni-popup ref="popup1" class="popup-wrapper"  type="dialog">
@@ -49,6 +50,7 @@
 			</view>
 		</uni-popup>
 		<OptionsDialog ref="sexOptionsDialog" @onCheck= "useCheckSex" :options="[{value:0,text:'男'},{value:1,text:'女'}]"/>
+		<OptionsDialog ref="tenantOptionsDialog" @onCheck= "onSelectTenant" :options="tenantOptionList"/>
 	</view>
 </template>
 
@@ -57,9 +59,9 @@
 	import { useStore } from '../stores/useStore';
 	import OptionsDialog from '../components/OptionsDialog.vue';
 	import {HOST} from '../common/constant';
-	import { ref } from 'vue';
-	import type { UserDataType } from '../types';
-	import {updateUserDataService} from '../service';
+	import { reactive, ref } from 'vue';
+	import type { UserDataType,TenantType,OptionType } from '../types';
+	import {updateUserDataService,getTenantListService} from '../service';
 	import defaulAvater from '../../static/default_avater.png';
 	import { SexMap } from '../common/constant';
 	import icon_arrow from "../../static/icon_arrow.png"
@@ -69,7 +71,11 @@
 	const field = ref<string>('');
 	const popup1= ref<null | InstanceType<typeof uniPopup>>(null);
 	const sexOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
+	const tenantOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const inputValue = ref<string>('');
+	const tenantList = reactive<TenantType[]>([]);
+	const tenantOptionList = reactive<OptionType[]>([]);
+	const currentTenant = ref<TenantType|null>(null);
 	const store = useStore();
 
 	/**
@@ -157,6 +163,47 @@
 			url: `./UpdatePasswordPage`
 		})
 	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 切换租户
+	 * @date: 2025-8-10 18:06
+	 */
+	const onTabTenant = ()=>{
+		getTenantListService().then((res)=>{
+			tenantList.length = tenantOptionList.length = 0
+			tenantList.push(...res.data);
+			tenantOptionList.push(...res.data.map(item=>{
+				return {value:item.id,text:item.name}
+			}))
+			tenantOptionsDialog.value?.$refs.popup.open('top')
+		})
+	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 切换租户
+	 * @date: 2025-8-10 18:06
+	 */
+	const onSelectTenant=(vallue:string)=>{
+		store.setTenant(tenantList.find((item)=>item.id===vallue)??null);
+		uni.setStorage({key:'tenant',data:JSON.stringify(currentTenant.value)});
+	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 获取租户i
+	 * @date: 2025-8-10 18:06
+	 */
+	const getStorageTenant = ()=>{
+		uni.getStorage({key:'tenant'}).then((res)=>{
+			if(res.data){
+				store.setTenant(JSON.parse(res.data) as TenantType);
+			}
+		});
+	}
+
+	getStorageTenant()
 </script>
 
 <style lang="less">
@@ -196,28 +243,22 @@
 					}
 				}
 			}
-			.btn-logout{
-				border: none;
-				display: block;
-				width: 100%;
+			.btn-user{
+				overflow: hidden;
 				margin-top: @page-padding;
-				background-color: @warn-color;
-				color: @module-background-color;
-				border-radius: @big-border-radius;
-			}
-			.btn-update-password{
-				text-align: center;
-				width: 100%;
-				outline: none;
-				border: 1rpx solid @disable-text-color;
-				box-sizing: border-box;
-				border-radius: @big-border-radius;
-				margin-top:  @page-padding;
-				display: inline-block;
-				padding: @page-padding ;
 				background-color: transparent;
+				border: 1px solid @disable-text-color;
+				border-radius: @big-border-radius;
+				&::after{
+					display: none;
+				}
+				&.btn-logout{
+					border-radius: @big-border-radius;
+					background-color: @warn-color;
+					border: none;
+					color: @module-background-color;
+				}
 			}
-			
 		}
 		.popup-wrapper{
 			width: 100%;

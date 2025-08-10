@@ -90,16 +90,14 @@
 			</view>
 		</view>
 		<view class="side-wrapper" v-show="showHistory">
-			<view class="pop-wrapper">
-				<scroll-view class="pop-scroll-view" scroll-y :show-scrollbar="false" @scrolltolower="onScrolltolower">
-					<view class="history-list">
-						<view class="chat-item" :key="items.timeAgo" v-for="items in chatHistoryData">
-							<text class="chat-time">{{ items.timeAgo }}</text>
-							<text class="chat-content" @click="onChat(item)" :key="'chat-content'+index" v-for="item,index in items.list">{{ item[0].prompt }}</text>
-						</view>
+			<scroll-view class="pop-scroll-view side-scroll-view" scroll-y :show-scrollbar="false" @scrolltolower="onScrolltolower">
+				<view class="history-list">
+					<view class="chat-item" :key="items.timeAgo" v-for="items in chatHistoryData">
+						<text class="chat-time">{{ items.timeAgo }}</text>
+						<text class="chat-content" @click="onChat(item)" :key="'chat-content'+index" v-for="item,index in items.list">{{ item[0].prompt }}</text>
 					</view>
-				</scroll-view>
-			</view>
+				</view>
+			</scroll-view>
 			<view class="side-mask" @click="onClose"></view>
 		</view>
 		<DialogComponent v-if="showMyDoc" @onClose="showMyDoc = false">
@@ -198,7 +196,7 @@
 	import icon_switch from '../../static/icon_switch.png';
 	import icon_menu_add from '../../static/icon_menu_add.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
-	import type {OptionInterce,DocumentInterface,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
+	import type {OptionType,DocumentInterface,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
 	import { HOST, PAGE_SIZE } from '../common/constant';
@@ -241,7 +239,7 @@
 		}
 	]);
 	const chatModelList = reactive<Array<ChatModelType>>([]);
-	const chatModelOption = reactive<Array<OptionInterce>>([]);
+	const chatModelOption = reactive<Array<OptionType>>([]);
 	const modelOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const type = ref<string>("");
 	const language = ref<LanguageEnum>(LanguageEnum.zh);
@@ -1003,6 +1001,9 @@
 				}
 			}
 		}
+		.side-wrapper{
+
+		}
 		.directory-wrapper{
 			height: 100%;
 			display: flex;
@@ -1135,7 +1136,25 @@
 				}
 			}
 		}
+		.side-wrapper{
+			position:fixed;
+			top: 0;
+			left:0;
+			width: 100vw;
+			height: 100vh;
+			
+			display: flex;
+			.side-mask{
+				flex:1;
+				background-color: @black-background-color;
+				opacity: 0.5;
+			}
+		}
 		.pop-scroll-view{
+			background-color: @module-background-color;
+			&.side-scroll-view{
+				width: 80%;
+			}
 			height: 100vh;
 			padding: @page-padding;
 			box-sizing: border-box;

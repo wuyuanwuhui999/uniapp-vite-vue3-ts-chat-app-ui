@@ -140,3 +140,12 @@ export const getDirectoryListService = ():Promise<MyAwesomeData<types.DirectoryI
 export const createDirectoryService = (directory:types.DirectoryInterce):Promise<MyAwesomeData<types.DirectoryInterce>> => {
   return httpRequest.post<types.DirectoryInterce>(api.createDir,directory);
 }
+
+/**
+ * @description: 获取租户列表
+ * @date: 2025-08-10 18:25
+ * @author wuwenqiang
+ */
+export const getTenantListService = ():Promise<MyAwesomeData<types.TenantType[]>> => {
+  return httpRequest.get<types.TenantType[]>(api.getUserTenants);
+}

@@ -103,7 +103,7 @@ export interface DocumentInterface {
   directoryName:string;// 目录名称
 };
 
-export interface OptionInterce {
+export interface OptionType {
   text:string,
   value:string | number
 }
@@ -115,4 +115,41 @@ export interface DirectoryInterce {
   directory:string;// 目录名称
   createTime?:string;// 创建时间
   updateTime?:string;// 更新时间
+}
+
+// 租户
+export interface TenantUserType {
+  id: string; // 主键
+  tenant_id: string; // 租户id
+  user_id: string; // 用户id
+  role_type: number; // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)
+  join_date: Date; // 加入日期
+  create_by: string; // 创建足额
+}
+
+/** 租户状态枚举 */
+export enum TenantStatus {
+  DISABLED = 0,// 禁用
+  ENABLED = 1// 启用
+}
+
+export interface TenantType {
+  id: string;// 租户ID（主键）
+  name: string;// 租户名称
+  code: string;// 租户编码（唯一）
+  description?: string | null;// 租户描述（可选）
+  status: TenantStatus;// 租户状态
+  create_date: Date;// 创建时间
+  update_date?: Date | null;// 更新时间（可选）
+  created_by: string;// 创建人ID
+  updated_by?: string | null;// 更新人ID（可选）
+}
+
+export interface AppStoreStateType {
+  userData: UserDataType;
+  token: string;
+  platform: string;
+  device: string;
+  version: string;
+  tenant: TenantType |null;
 }

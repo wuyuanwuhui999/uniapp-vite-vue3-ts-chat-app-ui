@@ -21,4 +21,5 @@ export default {
   createDir: "/service/ai/createDir",// 创建目录
   renameDir: "/service/ai/renameDir",// 重命名目录
   deleteDir: "/service/ai/deleteDir/",// 删除目录
+  getUserTenants: "/service/user/getUserTenants"
 };

@@ -1,15 +1,14 @@
 import { defineStore } from 'pinia'
-import type {UserDataType} from '../types/index';
+import type {UserDataType,AppStoreStateType, TenantType} from '../types/index';
 export const useStore = defineStore("myStore", {
-    state:() => {
-        return {
-			userData:{} as UserDataType,
-			token: '',
-			platform:'',// 平台
-			device:'',
-			version:'',
-		}
-    },
+     state: (): AppStoreStateType => ({
+		userData: {} as UserDataType,
+		token: '',
+		platform: '', // 平台
+		device: '',
+		version: '',
+		tenant: null
+	}),
     actions: {
 		setUserData(userData:UserDataType){
 			this.userData = userData;
@@ -23,6 +22,10 @@ export const useStore = defineStore("myStore", {
 
 		setToken(token:string){
 			this.token = token
+		},
+
+		setTenant(tenant:TenantType|null){
+			this.tenant = tenant;
 		}
     }
 })

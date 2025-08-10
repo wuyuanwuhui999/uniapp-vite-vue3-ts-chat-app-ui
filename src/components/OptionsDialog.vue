@@ -16,14 +16,14 @@
 <script lang="ts" setup>
 	import uniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup.vue';
 	import { defineProps, defineEmits, ref} from 'vue';
-	import type {OptionInterce} from "../types";
+	import type {OptionType} from "../types";
 	
 	const popup= ref<null | InstanceType<typeof uniPopup>>(null);
 	const emits = defineEmits(['onCheck']);
 
 	const {options} = defineProps({
 		options:{
-			type:Array<OptionInterce>,
+			type:Array<OptionType>,
 			reqiure:true,
 			default:[]
 		}

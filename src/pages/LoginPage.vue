@@ -60,7 +60,7 @@
 	const code = ref<string>('');
 
 	const store = useStore();
-	userAccount.value = store.userData.userAccount || "";
+	userAccount.value = store.userData.userAccount;
 	uni.getStorage({key:userAccount.value}).then(res=>{
 		password.value = res.data || ""
 	});
@@ -165,7 +165,7 @@
 					uni.setStorage({key:'token',data:res.token});
 					httpRequest.setToken(res.token);
 					uni.reLaunch({
-						url: `../pages/MusicIndexPage`
+						url: `../pages/ChatPage`
 					})
 					uni.showToast({
 						duration:2000,
