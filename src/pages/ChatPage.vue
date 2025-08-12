@@ -712,7 +712,7 @@
 				const uploadPromises = validFiles.map(file => {
 					return new Promise<void>((resolve, reject) => {
 						uni.uploadFile({
-						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}`, // 替换为你的上传接口URL
+						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}&tenantId=${store.tenant?.id}`, // 替换为你的上传接口URL
 						filePath: file.path,
 						name: 'file',
 						formData: {

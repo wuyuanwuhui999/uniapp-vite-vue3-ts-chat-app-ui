@@ -73,8 +73,17 @@
 	const sexOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const tenantOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const inputValue = ref<string>('');
-	const tenantList = reactive<TenantType[]>([]);
-	const tenantOptionList = reactive<OptionType[]>([]);
+	const tenantList = reactive<TenantType[]>([{
+		id: "0",
+		name: "私人空间",
+		code: "personal",
+		status: 1,
+		created_by:"system"
+	}]);
+	const tenantOptionList = reactive<OptionType[]>([{
+		value: "0",
+		text: "私人空间"
+	}]);
 	const currentTenant = ref<TenantType|null>(null);
 	const store = useStore();
 
@@ -171,9 +180,8 @@
 	 */
 	const onTabTenant = ()=>{
 		getTenantListService().then((res)=>{
-			tenantList.length = tenantOptionList.length = 0
-			tenantList.push(...res.data);
-			tenantOptionList.push(...res.data.map(item=>{
+			tenantList.splice(1,tenantList.length,...res.data)
+			tenantOptionList.splice(1,tenantOptionList.length,...res.data.map(item=>{
 				return {value:item.id,text:item.name}
 			}))
 			tenantOptionsDialog.value?.$refs.popup.open('top')

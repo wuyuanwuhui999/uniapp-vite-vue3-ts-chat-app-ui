@@ -113,6 +113,7 @@ export interface DirectoryInterce {
   id?:string;// 目录id
   userId?:string;// 用户id
   directory:string;// 目录名称
+  tenantId: string;// 租户id
   createTime?:string;// 创建时间
   updateTime?:string;// 更新时间
 }
@@ -139,7 +140,7 @@ export interface TenantType {
   code: string;// 租户编码（唯一）
   description?: string | null;// 租户描述（可选）
   status: TenantStatus;// 租户状态
-  create_date: Date;// 创建时间
+  create_date?: Date;// 创建时间
   update_date?: Date | null;// 更新时间（可选）
   created_by: string;// 创建人ID
   updated_by?: string | null;// 更新人ID（可选）
