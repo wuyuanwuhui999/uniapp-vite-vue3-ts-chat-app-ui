@@ -58,12 +58,11 @@
 	import uniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup.vue';
 	import { useStore } from '../stores/useStore';
 	import OptionsDialog from '../components/OptionsDialog.vue';
-	import {HOST} from '../common/constant';
 	import { reactive, ref } from 'vue';
 	import type { UserDataType,TenantType,OptionType } from '../types';
 	import {updateUserDataService,getTenantListService} from '../service';
 	import defaulAvater from '../../static/default_avater.png';
-	import { SexMap } from '../common/constant';
+	import { SexMap,HOST } from '../common/constant';
 	import icon_arrow from "../../static/icon_arrow.png"
 	import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 
@@ -73,13 +72,7 @@
 	const sexOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const tenantOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const inputValue = ref<string>('');
-	const tenantList = reactive<TenantType[]>([{
-		id: "0",
-		name: "私人空间",
-		code: "personal",
-		status: 1,
-		created_by:"system"
-	}]);
+	const tenantList = reactive<TenantType[]>([]);
 	const tenantOptionList = reactive<OptionType[]>([{
 		value: "0",
 		text: "私人空间"
@@ -197,21 +190,6 @@
 		store.setTenant(tenantList.find((item)=>item.id===vallue)??null);
 		uni.setStorage({key:'tenant',data:JSON.stringify(currentTenant.value)});
 	}
-
-	/**
-	 * @author: wuwenqiang
-	 * @description: 获取租户i
-	 * @date: 2025-8-10 18:06
-	 */
-	const getStorageTenant = ()=>{
-		uni.getStorage({key:'tenant'}).then((res)=>{
-			if(res.data){
-				store.setTenant(JSON.parse(res.data) as TenantType);
-			}
-		});
-	}
-
-	getStorageTenant()
 </script>
 
 <style lang="less">

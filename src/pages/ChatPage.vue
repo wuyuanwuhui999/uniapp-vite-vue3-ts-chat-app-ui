@@ -196,10 +196,10 @@
 	import icon_switch from '../../static/icon_switch.png';
 	import icon_menu_add from '../../static/icon_menu_add.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
-	import type {OptionType,DocumentInterface,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
+	import type {TenantType,OptionType,DocumentInterface,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
-	import { HOST, PAGE_SIZE } from '../common/constant';
+	import { HOST, PAGE_SIZE,DEFAULT_TENANT } from '../common/constant';
 	import api from '@/api';
 	import { getChatHistoryService, getModelListService, getMyDocumentService,deleteMyDocumentService,getDirectoryListService,createDirectoryService }from "../service";
 	import { useStore } from "../stores/useStore";
@@ -751,6 +751,7 @@
 					icon: 'success',
 					duration: 2000
 				});
+				showDirDialog.value = false;
 			} catch (error) {
 				uni.showToast({
 					title: error instanceof Error ? error.message : '上传过程中出错',
@@ -796,6 +797,24 @@
 		showCheckDocument.value = false;
 		directoryId.value = mDirectoryId.value;
 	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 获取租户i
+	 * @date: 2025-8-10 18:06
+	 */
+	const getStorageTenant = ()=>{
+		uni.getStorage({key:`${store.userData.id}:tenant`}).then((res)=>{
+			console.log(res.data)
+			if(res.data){
+				store.setTenant(JSON.parse(res.data) as TenantType);
+			}else{
+				store.setTenant(DEFAULT_TENANT);
+			}
+		});
+	}
+
+	getStorageTenant()
 </script>
 
 <style lang="less" scoped>

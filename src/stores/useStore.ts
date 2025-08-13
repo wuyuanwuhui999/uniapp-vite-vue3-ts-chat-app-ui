@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type {UserDataType,AppStoreStateType, TenantType} from '../types/index';
+import {DEFAULT_TENANT} from "../common/constant"
 export const useStore = defineStore("myStore", {
      state: (): AppStoreStateType => ({
 		userData: {} as UserDataType,
@@ -7,7 +8,7 @@ export const useStore = defineStore("myStore", {
 		platform: '', // 平台
 		device: '',
 		version: '',
-		tenant: null
+		tenant: DEFAULT_TENANT
 	}),
     actions: {
 		setUserData(userData:UserDataType){

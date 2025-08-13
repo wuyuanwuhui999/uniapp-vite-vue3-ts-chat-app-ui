@@ -1,3 +1,5 @@
+import type{ TenantType } from "../types";
+
 // export const HOST:string = 'http://254a2y1767.qicp.vip';
 export const HOST:string = 'http://127.0.0.1:4001';
 
@@ -13,4 +15,12 @@ type CommonType = {
 export const SexMap:CommonType = {
     0: '男',
     1: '女'
+}
+
+export const DEFAULT_TENANT:TenantType = {
+    id: "0",
+    name: "私人空间",
+    code: "personal",
+    status: 1,
+    created_by:"system"
 }
