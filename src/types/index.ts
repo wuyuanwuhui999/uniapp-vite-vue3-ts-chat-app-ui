@@ -121,11 +121,11 @@ export interface DirectoryInterce {
 // 租户
 export interface TenantUserType {
   id: string; // 主键
-  tenant_id: string; // 租户id
-  user_id: string; // 用户id
-  role_type: number; // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)
-  join_date: Date; // 加入日期
-  create_by: string; // 创建足额
+  tenantId: string; // 租户id
+  userId: string; // 用户id
+  roleType: number; // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)
+  joinDate: Date; // 加入日期
+  createBy: string; // 创建足额
 }
 
 /** 租户状态枚举 */

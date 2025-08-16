@@ -1,6 +1,6 @@
 <template>
 	<view class="page-wrapper">
-		<NavigatorTitleComponent :title="store.tenant?.name??'个人信息'"/>
+		<NavigatorTitleComponent :title="store.tenant?.name??'私人空间'"/>
 		<view class="page-body">
 			<view class="module-block">
 				<view class="row">
@@ -30,6 +30,7 @@
 				</view>
 			</view>
 			<button class="btn-user" @click="onTabTenant">切换租户</button>
+			<button class="btn-user" v-if="tenantUser?.roleType??0 > 0" @click="onManageTenant">租户管理</button>
 			<button class="btn-user" @click="useUpdatePassword">修改密码</button>
 			<button class="btn-user btn-logout" @click="useLogout">退出登录</button>
 		</view>
@@ -59,10 +60,10 @@
 	import { useStore } from '../stores/useStore';
 	import OptionsDialog from '../components/OptionsDialog.vue';
 	import { reactive, ref } from 'vue';
-	import type { UserDataType,TenantType,OptionType } from '../types';
-	import {updateUserDataService,getTenantListService} from '../service';
+	import type { UserDataType,TenantType,OptionType,TenantUserType } from '../types';
+	import {updateUserDataService,getTenantListService,getTenantUserService} from '../service';
 	import defaulAvater from '../../static/default_avater.png';
-	import { SexMap,HOST } from '../common/constant';
+	import { SexMap,HOST, DEFAULT_TENANT} from '../common/constant';
 	import icon_arrow from "../../static/icon_arrow.png"
 	import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 
@@ -72,13 +73,14 @@
 	const sexOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const tenantOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const inputValue = ref<string>('');
-	const tenantList = reactive<TenantType[]>([]);
+	const tenantList = reactive<TenantType[]>([DEFAULT_TENANT]);
 	const tenantOptionList = reactive<OptionType[]>([{
 		value: "0",
 		text: "私人空间"
 	}]);
 	const currentTenant = ref<TenantType|null>(null);
 	const store = useStore();
+	const tenantUser = ref<TenantUserType|null>(null);
 
 	/**
 	 * @author: wuwenqiang
@@ -188,8 +190,37 @@
 	 */
 	const onSelectTenant=(vallue:string)=>{
 		store.setTenant(tenantList.find((item)=>item.id===vallue)??null);
-		uni.setStorage({key:'tenant',data:JSON.stringify(currentTenant.value)});
+		getTenantUser();
+		uni.setStorage({key:`${store.userData.id}:tenant`,data:JSON.stringify(currentTenant.value)});
 	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 租户管理
+	 * @date: 2025-8-16 20:20
+	 */
+	const onManageTenant = ()=>{
+		uni.navigateTo({
+			url: `../pages/TenantManagePage`
+		})
+	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 获取租户下的用户
+	 * @date: 2025-8-16 20:20
+	 */
+	const getTenantUser = () =>{
+		if(store.tenant?.code !== DEFAULT_TENANT.code){
+			getTenantUserService(store.tenant?.id||"").then((res)=>{
+				tenantUser.value = res.data;
+			})
+		}else{
+			tenantUser.value = null;
+		}
+	}
+	
+	getTenantUser()
 </script>
 
 <style lang="less">
@@ -232,7 +263,7 @@
 			.btn-user{
 				overflow: hidden;
 				margin-top: @page-padding;
-				background-color: transparent;
+				background-color: @module-background-color;
 				border: 1px solid @disable-text-color;
 				border-radius: @big-border-radius;
 				&::after{

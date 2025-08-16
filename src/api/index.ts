@@ -21,5 +21,6 @@ export default {
   createDir: "/service/ai/createDir",// 创建目录
   renameDir: "/service/ai/renameDir",// 重命名目录
   deleteDir: "/service/ai/deleteDir/",// 删除目录
-  getUserTenants: "/service/tenant/getUserTenants"
+  getTenantsList: "/service/tenant/getTenantsList",// 获取用户当前的所有租户列表
+  getTenantUser: "/service/tenant/user"// 获取当前租户下的用户
 };

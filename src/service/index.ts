@@ -110,7 +110,7 @@ export const getModelListService = ():Promise<MyAwesomeData<Array<types.ChatMode
  * @date: 2025-06-21 13:48
  * @author wuwenqiang
  */
-export const getMyDocumentService = (directoryId:string):Promise<MyAwesomeData<Array<types.DocumentInterface>>> => {
+export const getMyDocumentService = (directoryId:string,tenantId:string):Promise<MyAwesomeData<Array<types.DocumentInterface>>> => {
     return httpRequest.get<Array<types.DocumentInterface>>(`${api.getDocList}?directoryId=${directoryId}`);
 }
 
@@ -147,5 +147,15 @@ export const createDirectoryService = (directory:types.DirectoryInterce):Promise
  * @author wuwenqiang
  */
 export const getTenantListService = ():Promise<MyAwesomeData<types.TenantType[]>> => {
-  return httpRequest.get<types.TenantType[]>(api.getUserTenants);
+  return httpRequest.get<types.TenantType[]>(api.getTenantsList);
 }
+
+/**
+ * @description: 获取租户下的用户
+ * @date: 2025-08-16 20:14
+ * @author wuwenqiang
+ */
+export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<types.TenantUserType|null>> => {
+  return httpRequest.get<types.TenantUserType|null>(`${api.getTenantUser}?tenantId=${tenantId}`);
+}
+

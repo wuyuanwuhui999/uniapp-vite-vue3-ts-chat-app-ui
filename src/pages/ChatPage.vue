@@ -515,7 +515,7 @@
 	 */
 	const onShowMyDoc = () => {
 		uni.showLoading();
-		getMyDocumentService(directoryId.value).then((res)=>{
+		getMyDocumentService(directoryId.value,store.tenant?.id??"personal").then((res)=>{
 			showMyDoc.value = true;
 			showMenu.value = false;
 			myDocList.length = 0;
