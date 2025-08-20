@@ -2,7 +2,7 @@
 	<view class="page-header">
         <image class="icon-back" @click="useBack" :src="icon_back"/>
         <text class="my-favorite">{{ title }}</text>
-        <view class="icon-back"/>
+        <slot><view class="icon-back"/></slot>
     </view>
 </template>
 

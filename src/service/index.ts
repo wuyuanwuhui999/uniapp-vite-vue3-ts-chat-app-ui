@@ -159,3 +159,13 @@ export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<type
   return httpRequest.get<types.TenantUserType|null>(`${api.getTenantUser}?tenantId=${tenantId}`);
 }
 
+
+/**
+ * @description: 获取租户下的所有
+ * @date: 2025-08-16 20:14
+ * @author wuwenqiang
+ */
+export const getTenantUserListService = (tenantId:string):Promise<MyAwesomeData<types.TenantUserType[]>> => {
+  return httpRequest.get<types.TenantUserType[]>(`${api.getTenantUser}?tenantId=${tenantId}`);
+}
+
