@@ -165,7 +165,7 @@ export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<type
  * @date: 2025-08-16 20:14
  * @author wuwenqiang
  */
-export const getTenantUserListService = (tenantId:string):Promise<MyAwesomeData<types.TenantUserType[]>> => {
-  return httpRequest.get<types.TenantUserType[]>(`${api.getTenantUser}?tenantId=${tenantId}`);
+export const getTenantUserListService = (tenantId:string,pageNum:number,pageSize:number):Promise<MyAwesomeData<types.TenantUserType[]>> => {
+  return httpRequest.get<types.TenantUserType[]>(`${api.getTenantUserList}?tenantId=${tenantId}&pageNum=${pageNum}&pageSize=pageSize`);
 }
 
