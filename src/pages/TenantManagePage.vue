@@ -1,6 +1,6 @@
 <template>
     <view class="page-wrapper">
-		<NavigatorTitleComponent title="租户管理">
+		<NavigatorTitleComponent :title="store.tenant?.name">
 			<template #default>
 				<image class="icon-small" :src="icon_switch"/>
 			</template>
@@ -19,13 +19,15 @@
 import icon_switch from "../../static/icon_switch.png"
 import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 import type{TenantUserType} from "../types";
-import {reactive} from "vue";
+import {reactive, ref} from "vue";
 import {getTenantUserListService} from "../service";
 import { useStore } from '../stores/useStore';
+import { PAGE_SIZE } from "../common/constant";
+const pageNum = ref<number>(1);
 const tenantUserList = reactive<TenantUserType[]>([]);
 const store = useStore();
 
-getTenantUserListService(store.tenant?.id??"").then((res)=>{
+getTenantUserListService(store.tenant?.id??"",pageNum.value,PAGE_SIZE).then((res)=>{
 	tenantUserList.splice(0,tenantUserList.length,...res.data);
 })
 
