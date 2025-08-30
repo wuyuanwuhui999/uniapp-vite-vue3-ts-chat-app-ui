@@ -125,7 +125,11 @@ export interface TenantUserType {
   userId: string; // 用户id
   roleType: number; // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)
   joinDate: Date; // 加入日期
-  createBy: string; // 创建足额
+  createBy: string; // 创建时间
+  username: string; // 用户名
+  avater?: string; // 头像
+  disabled: number;// 是否禁用
+  email: string;// 邮箱
 }
 
 /** 租户状态枚举 */
