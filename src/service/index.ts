@@ -169,3 +169,13 @@ export const getTenantUserListService = (tenantId:string,pageNum:number,pageSize
   return httpRequest.get<types.TenantUserType[]>(`${api.getTenantUserList}?tenantId=${tenantId}&pageNum=${pageNum}&pageSize=${pageSize}`);
 }
 
+/**
+ * @description: 模糊搜索用户
+ * @date: 2025-08-16 20:14
+ * @author wuwenqiang
+ */
+export const searchUserListService = (keyword:string,tenantId:string,pageNum:number,pageSize:number):Promise<MyAwesomeData<types.UserWithChecked[]>> => {
+  return httpRequest.get<types.UserWithChecked[]>(`${api.searchUsers}?keyword=${keyword}&tenantId=${tenantId}&pageNum=${pageNum}&pageSize=${pageSize}`);
+}
+
+

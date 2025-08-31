@@ -9,6 +9,7 @@ export default {
   updateAvater:'/service/user-getway/updateAvater',//更新头像
   updatePassword: '/service/user-getway/updatePassword',//更新密码
   loginByEmail: '/service/user/loginByEmail',//邮箱登录
+  searchUsers: "/service/user-getway/searchUsers",// 搜索用户
   chat:"/service/ai/chat",// ai聊天
   getChatHistory: "/service/ai/getChatHistory",// ai聊天
   // chatWs: "/service/music/ws/chat",// ai聊天

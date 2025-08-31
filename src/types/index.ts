@@ -4,21 +4,21 @@ import type { PositionEnum } from '../enum/index';
 
 export type UserDataType = {
 	id?: string;
-    userAccount:     string;
-    createDate?: string;
-    updateDate?: string;
-    username:   string;
-    telephone:  string;
-    email:      string;
-    avater?:     string;
-    birthday:   string;
-    sex:        number;
-    role?:       string;
-    password:   string;
-    sign:       string;
-    region:     string;
-    disabled?:   number;
-    permission?: number;
+  userAccount:     string;
+  createDate?: string;
+  updateDate?: string;
+  username:   string;
+  telephone:  string;
+  email:      string;
+  avater?:     string;
+  birthday:   string;
+  sex:        number;
+  role?:       string;
+  password:   string;
+  sign:       string;
+  region:     string;
+  disabled?:   number;
+  permission?: number;
 }
 
 // 主体数据结构，键是时间前缀，值是该时间前缀下的消息组
