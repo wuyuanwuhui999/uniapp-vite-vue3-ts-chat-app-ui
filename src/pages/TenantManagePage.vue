@@ -2,7 +2,7 @@
     <view class="page-wrapper">
 		<NavigatorTitleComponent :title="store.tenant?.name">
 			<template #default>
-				<image class="icon-small" @click="showAddDialog = true" :src="icon_menu_add"/>
+				<image class="icon-small" @click="onShowAddDialog" :src="icon_menu_add"/>
 			</template>
 		</NavigatorTitleComponent>
 		<scroll-view class="page-body" scroll-y show-scrollbar="false" @scrolltolower="onScrolltolower">
@@ -158,6 +158,16 @@ const addTenant = (item:UserWithChecked)=>{
       tenantUserList.push(res.data)
     })
   }
+}
+
+/**
+ * @author: wuwenqiang
+ * @description: 显示添加用户的弹窗
+ * @date: 2025-09-01 21:53
+ */
+const onShowAddDialog = ()=>{
+  showAddDialog.value = true;
+  searchUserList.length = 0;
 }
 getTenantList();
 </script>
