@@ -158,3 +158,8 @@ export interface AppStoreStateType {
   version: string;
   tenant: TenantType |null;
 }
+
+// 或者使用接口继承的方式
+export interface UserWithChecked extends UserDataType {
+  checked: number;
+}

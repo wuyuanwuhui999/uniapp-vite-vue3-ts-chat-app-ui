@@ -38,7 +38,9 @@
               <template v-for="item,index in searchUserList" :key="'search-user'+index">
                 <view class="user-info">
                   <image class="user-avater user-avater-small"  :src = "item.avater ? HOST + item.avater: defaulAvater"/>
-                  <text>{{item.userAccount}} - {{item.username}}</text>
+                  <text class="user-name">{{item.username}}</text>
+                  <text class="user-account">{{item.userAccount}}</text>
+                  <image @click="addTenant(item)" class="icon-small" :src="item.checked ? icon_add_tenant_active :icon_add_tenant"></image>
                 </view>
                 <view class="line" v-if="index !== searchUserList.length - 1"></view>
               </template>
@@ -56,13 +58,14 @@ import icon_menu_add from "../../static/icon_menu_add.png"
 import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 import type{TenantUserType, UserWithChecked} from "../types";
 import {reactive, ref} from "vue";
-import {getTenantUserListService,searchUserListService} from "../service";
+import {getTenantUserListService,searchUserListService,addTenantUserService} from "../service";
 import { useStore } from '../stores/useStore';
 import {HOST, PAGE_SIZE} from "../common/constant";
 import defaulAvater from "../../static/default_avater.png";
 import DialogComponent from "../components/DialogComponent.vue";
 import icon_search from "../../static/icon_search.png";
-
+import icon_add_tenant from "../../static/icon_add_tenant.png"
+import icon_add_tenant_active from "../../static/icon_add_tenant_active.png"
 const showAddDialog = ref<boolean>(false);
 const total = ref<number>(0);// 总数
 const pageNum = ref<number>(1);
@@ -97,12 +100,22 @@ const onScrolltolower = ()=>{
   }
 }
 
+/**
+ * @author: wuwenqiang
+ * @description: 搜索用户
+ * @date: 2025-08-30 21:48
+ */
 const onSearchUser = () => {
   searchUserList.length = 0;
   pageNum.value = 1;
   getSearchUserList();
 }
 
+/**
+ * @author: wuwenqiang
+ * @description: 搜索用户
+ * @date: 2025-08-30 21:48
+ */
 const getSearchUserList = ()=>{
   searchUserListService(inputValue.value,store.tenant?.id??"",searchPageNum.value,PAGE_SIZE).then((res)=>{
     searchUserTotal.value = res.total;
@@ -110,10 +123,40 @@ const getSearchUserList = ()=>{
   })
 } 
 
+/**
+ * @author: wuwenqiang
+ * @description: 加载更多用户列表
+ * @date: 2025-08-30 21:48
+ */
 const onLoadMoreUser = ()=>{
   if(searchUserTotal.value > searchPageNum.value * PAGE_SIZE){
     searchPageNum.value++;
     getSearchUserList();
+  }
+}
+
+/**
+ * @author: wuwenqiang
+ * @description: 添加租户
+ * @date: 2025-09-01 21:53
+ */
+const addTenant = (item:UserWithChecked)=>{
+  if(item.checked){
+    uni.showToast({
+      duration:2000,
+      position:'center',
+      title: "该用户已添加"
+    });
+  }else{
+    addTenantUserService(store.tenant!.id,item.id!).then((res)=>{
+      uni.showToast({
+        duration:2000,
+        position:'center',
+        title: "添加用户成功"
+      });
+      item.checked = 1;
+      tenantUserList.push(res.data)
+    })
   }
 }
 getTenantList();
@@ -130,6 +173,10 @@ getTenantList();
       display: flex;
       align-items: center;
       gap: @page-padding;
+      .user-account{
+        color: @disable-text-color;
+        flex: 1;
+      }
     }
     .line{
       height: 1rpx;

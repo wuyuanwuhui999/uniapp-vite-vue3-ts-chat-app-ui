@@ -24,5 +24,6 @@ export default {
   deleteDir: "/service/ai/deleteDir/",// 删除目录
   getTenantsList: "/service/tenant/getTenantsList",// 获取用户当前的所有租户列表
   getTenantUser: "/service/tenant/getTenantUser",// 获取当前租户下的用户
-  getTenantUserList: "/service/tenant/getTenantUserList"// 获取当前租户下的用户列表
+  getTenantUserList: "/service/tenant/getTenantUserList",// 获取当前租户下的用户列表
+  addTenantUser:"/service/tenant/addTenantUser/"// 添加用户
 };

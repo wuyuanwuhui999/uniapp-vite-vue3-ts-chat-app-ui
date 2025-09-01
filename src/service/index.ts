@@ -178,4 +178,14 @@ export const searchUserListService = (keyword:string,tenantId:string,pageNum:num
   return httpRequest.get<types.UserWithChecked[]>(`${api.searchUsers}?keyword=${keyword}&tenantId=${tenantId}&pageNum=${pageNum}&pageSize=${pageSize}`);
 }
 
+/**
+ * @description: 添加租户
+ * @date: 2025-09-01 22:04
+ * @author wuwenqiang
+ */
+export const addTenantUserService = (tenantId:string,userId:string):Promise<MyAwesomeData<types.TenantUserType>> => {
+  return httpRequest.post<types.TenantUserType>(`${api.addTenantUser}${tenantId}/${userId}`);
+}
+
+
 
