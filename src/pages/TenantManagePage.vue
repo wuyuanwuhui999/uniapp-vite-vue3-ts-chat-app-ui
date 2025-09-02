@@ -8,13 +8,17 @@
 		<scroll-view class="page-body" scroll-y show-scrollbar="false" @scrolltolower="onScrolltolower">
       <view>
         <view class="module-block module-block-column">
-          <template v-for="item,index in tenantUserList" :key="'user-info'+index">
-            <view class="user-info">
-              <image class="user-avater user-avater-small"  :src = "item.avater ? HOST + item.avater: defaulAvater"/>
-              <text>{{item.username}}</text>
-            </view>
-            <view class="line" v-if="index !== tenantUserList.length - 1"></view>
-          </template>
+          <uniSwipeAction>
+            <uniSwipeActionItem v-for="item,index in tenantUserList" :key="'user-info'+index">
+              <view class="user-info"  :class="index === tenantUserList.length -1 ? 'user-info-last-child' : ''">
+                <image class="user-avater user-avater-small"  :src = "item.avater ? HOST + item.avater: defaulAvater"/>
+                <text>{{item.username}}</text>
+              </view>
+              <template v-slot:right>
+                <view class="delete-button" @click="onDeleteTenantUser(item)"><text class="delete-button-text">删除</text></view>
+              </template>
+            </uniSwipeActionItem>
+          </uniSwipeAction>
         </view>
         <text class="load-data" v-if="total === tenantUserList.length">数据加载完毕</text>
         <text class="load-data" v-else>增加加载更多</text>
@@ -50,6 +54,7 @@
         </view>
       </template>
     </DialogComponent>
+    <PopupComponent :text="'是否删除用户 ' + deleteTenantUser?.username" @on-sure="sureDeleteDoc" ref="popupComponent"></PopupComponent>
 	</view>
 </template>
 
@@ -64,8 +69,14 @@ import {HOST, PAGE_SIZE} from "../common/constant";
 import defaulAvater from "../../static/default_avater.png";
 import DialogComponent from "../components/DialogComponent.vue";
 import icon_search from "../../static/icon_search.png";
-import icon_add_tenant from "../../static/icon_add_tenant.png"
-import icon_add_tenant_active from "../../static/icon_add_tenant_active.png"
+import icon_add_tenant from "../../static/icon_add_tenant.png";
+import icon_add_tenant_active from "../../static/icon_add_tenant_active.png";
+import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
+import uniSwipeActionItem from '@dcloudio/uni-ui/lib/uni-swipe-action-item/uni-swipe-action-item.vue';
+import PopupComponent from "../components/PopupComponent.vue";
+
+const popupComponent = ref<null | InstanceType<typeof PopupComponent>>(null);
+const deleteTenantUser = ref<TenantUserType|null>(null);
 const showAddDialog = ref<boolean>(false);
 const total = ref<number>(0);// 总数
 const pageNum = ref<number>(1);
@@ -169,6 +180,25 @@ const onShowAddDialog = ()=>{
   showAddDialog.value = true;
   searchUserList.length = 0;
 }
+
+/**
+ * @author: wuwenqiang
+ * @description: 删除租户
+ * @date: 2025-09-02 07:39
+ */
+const onDeleteTenantUser = (item:TenantUserType)=>{
+  deleteTenantUser.value = item;
+  popupComponent.value?.popup.value?.open('top');
+}
+
+/**
+ * @author: wuwenqiang
+ * @description: 确认删除
+ * @date: 2025-09-02 07:39
+ */
+const sureDeleteDoc = ()=>{
+
+}
 getTenantList();
 </script>
 
@@ -183,14 +213,18 @@ getTenantList();
       display: flex;
       align-items: center;
       gap: @page-padding;
+      padding-bottom:@page-padding;
+      margin-bottom: @page-padding;
+      border-bottom: 1px solid @disable-text-color;
+      &.user-info-last-child{
+        padding-bottom: 0;
+        margin-bottom: 0;
+        border-bottom:none;
+      }
       .user-account{
         color: @disable-text-color;
         flex: 1;
       }
-    }
-    .line{
-      height: 1rpx;
-      background-color: @disable-text-color;
     }
     .user-avater{
       border-radius: 50%;
@@ -199,6 +233,20 @@ getTenantList();
         height: @small-avater;
       }
     }
+    .delete-button{
+				display: flex;
+				height: 100%;
+				flex: 1;
+				flex-direction: row;
+				justify-content: center;
+				align-items: center;
+				background-color: @warn-color;
+				margin-left: @page-padding;
+				.delete-button-text{
+					color: @module-background-color;
+					padding: 0 calc(@page-padding * 2);
+				}
+			}
   }
   .load-data{
     text-align: center;

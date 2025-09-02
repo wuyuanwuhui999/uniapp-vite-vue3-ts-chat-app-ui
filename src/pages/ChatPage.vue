@@ -133,14 +133,14 @@
 			</template>
 			<template #content>
 				<view class="directory-wrapper">
-					<scoll-view scroll-y class="directory-scroll" :show-scrollbar="false">
+					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
 						<radio-group class="directory-list" v-model="directoryId">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
 								<text class="directory-name">{{ item.directory }}</text>
 								<radio :checked="directoryId === item.id" :value="item.id"></radio>
 							</label>
 						</radio-group>
-					</scoll-view>
+					</scroll-view>
 					<view class="dialog-btn-wrapper">
 						<text class="dialog-btn dialog-btn-sure" @click="onUploadSure">确定</text>
 						<text class="dialog-btn dialog-btn-cancle" @click="showCheckDocument = false">取消</text>
@@ -169,14 +169,14 @@
 			</template>
 			<template #content>
 				<view class="directory-wrapper">
-					<scoll-view scroll-y class="directory-scroll" :show-scrollbar="false">
+					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
 						<radio-group class="directory-list" v-model="mDirectoryId">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
 								<text class="directory-name">{{ item.directory }}</text>
 								<radio :checked="mDirectoryId === item.id" :value="item.id"></radio>
 							</label>
 						</radio-group>
-					</scoll-view>
+					</scroll-view>
 					<view class="dialog-btn-wrapper">
 						<text class="dialog-btn dialog-btn-sure" @click="onSureCheck">确定</text>
 						<text class="dialog-btn dialog-btn-cancle" @click="showCheckDocument = false">取消</text>
