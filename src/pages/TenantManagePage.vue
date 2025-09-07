@@ -9,15 +9,20 @@
       <view>
         <view class="module-block module-block-column">
           <uniSwipeAction>
-            <uniSwipeActionItem v-for="item,index in tenantUserList" :key="'user-info'+index">
-              <view class="user-info"  :class="index === tenantUserList.length -1 ? 'user-info-last-child' : ''">
-                <image class="user-avater user-avater-small"  :src = "item.avater ? HOST + item.avater: defaulAvater"/>
-                <text>{{item.username}}</text>
-              </view>
-              <template v-slot:right>
-                <view class="delete-button" @click="onDeleteTenantUser(item)"><text class="delete-button-text">删除</text></view>
-              </template>
-            </uniSwipeActionItem>
+            <template v-for="item,index in tenantUserList" :key="'user-info'+index">
+              <uniSwipeActionItem>
+                <view class="user-info"  :class="index === tenantUserList.length -1 ? 'user-info-last-child' : (index === 0 ? 'user-info-first-child' : '')">
+                  <image class="user-avater user-avater-small"  :src = "item.avater ? HOST + item.avater: defaulAvater"/>
+                  <text>{{item.username}}</text>
+                </view>
+                <template v-slot:right>
+                  <view class="button-wrapper">
+                    <view class="op-button set-admin-button"><text @click="onAdmin(item)" class="button-text">{{item.roleType === 1 ? '取消管理员' :'设为管理员'}}</text></view><view class="op-button delete-button"><text @click="onDeleteTenantUser(item)" class="button-text">删除</text></view>
+                  </view>
+                </template>
+              </uniSwipeActionItem>
+              <view class="line" v-if="index < tenantUserList.length - 1"></view>
+            </template>
           </uniSwipeAction>
         </view>
         <text class="load-data" v-if="total === tenantUserList.length">数据加载完毕</text>
@@ -63,7 +68,7 @@ import icon_menu_add from "../../static/icon_menu_add.png"
 import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 import type{TenantUserType, UserWithChecked} from "../types";
 import {reactive, ref} from "vue";
-import {getTenantUserListService,searchUserListService,addTenantUserService} from "../service";
+import {getTenantUserListService,searchUserListService,addTenantUserService,addAdminService,deleteAdminService} from "../service";
 import { useStore } from '../stores/useStore';
 import {HOST, PAGE_SIZE} from "../common/constant";
 import defaulAvater from "../../static/default_avater.png";
@@ -191,6 +196,28 @@ const onDeleteTenantUser = (item:TenantUserType)=>{
   popupComponent.value?.popup.value?.open('top');
 }
 
+const onAdmin = (item:TenantUserType)=>{
+  if(item.roleType === 1){
+    deleteAdminService(store.tenant?.id!,item.userId).then((res)=>{
+      item.roleType = 0;
+      uni.showToast({
+        duration:2000,
+        position:'center',
+        title: "取消管理员成功"
+      })
+    })
+  }else{
+    addAdminService(store.tenant?.id!,item.userId).then((res)=>{
+      item.roleType = 1;
+      uni.showToast({
+        duration:2000,
+        position:'center',
+        title: "添加管理员成功"
+      })
+    })
+  }
+
+}
 /**
  * @author: wuwenqiang
  * @description: 确认删除
@@ -213,9 +240,10 @@ getTenantList();
       display: flex;
       align-items: center;
       gap: @page-padding;
-      padding-bottom:@page-padding;
-      margin-bottom: @page-padding;
-      border-bottom: 1px solid @disable-text-color;
+      padding:@page-padding;
+      &.user-info-first-child{
+        padding-top: 0;
+      }
       &.user-info-last-child{
         padding-bottom: 0;
         margin-bottom: 0;
@@ -226,6 +254,10 @@ getTenantList();
         flex: 1;
       }
     }
+    .line{
+      height: 1rpx;
+      background: @disable-text-color;
+    }
     .user-avater{
       border-radius: 50%;
       &.user-avater-small{
@@ -233,20 +265,30 @@ getTenantList();
         height: @small-avater;
       }
     }
-    .delete-button{
-				display: flex;
-				height: 100%;
-				flex: 1;
-				flex-direction: row;
-				justify-content: center;
-				align-items: center;
-				background-color: @warn-color;
-				margin-left: @page-padding;
-				.delete-button-text{
-					color: @module-background-color;
-					padding: 0 calc(@page-padding * 2);
-				}
-			}
+    .button-wrapper{
+      display: flex;
+      .op-button{
+        display: flex;
+        height: 100%;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+
+        margin-left: @page-padding;
+        &.delete-button{
+          background-color: @warn-color;
+          color: @module-background-color;
+        }
+        &.set-admin-button{
+          background-color: @line-color;
+          color: @module-background-color;
+        }
+        .button-text{
+          padding: 0 calc(@page-padding * 2);
+        }
+      }
+    }
+
   }
   .load-data{
     text-align: center;

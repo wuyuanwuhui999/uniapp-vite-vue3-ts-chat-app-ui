@@ -187,5 +187,23 @@ export const addTenantUserService = (tenantId:string,userId:string):Promise<MyAw
   return httpRequest.post<types.TenantUserType>(`${api.addTenantUser}${tenantId}/${userId}`);
 }
 
+/**
+ * @description: 设置为管理员
+ * @date: 2025-09-01 22:04
+ * @author wuwenqiang
+ */
+export const addAdminService = (tenantId:string,userId:string):Promise<MyAwesomeData<types.TenantUserType>> => {
+    return httpRequest.post<types.TenantUserType>(api.addAdmin,{tenantId,userId});
+}
+
+/**
+ * @description: 设置为管理员
+ * @date: 2025-09-07 09:05
+ * @author wuwenqiang
+ */
+export const deleteAdminService = (tenantId:string,userId:string):Promise<MyAwesomeData<types.TenantUserType>> => {
+    return httpRequest.delete<types.TenantUserType>(api.deleteAdmin,{tenantId,userId});
+}
+
 
 
