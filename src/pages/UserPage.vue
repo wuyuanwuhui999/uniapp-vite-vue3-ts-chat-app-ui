@@ -211,7 +211,6 @@
 	 * @date: 2025-8-16 20:20
 	 */
 	const getTenantUser = () =>{
-		console.log(store.tenant)
 		if(store.tenant && store.tenant?.code !== DEFAULT_TENANT.code){
 			getTenantUserService(store.tenant?.id||"").then((res)=>{
 				tenantUser.value = res.data;

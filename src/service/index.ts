@@ -147,18 +147,8 @@ export const createDirectoryService = (directory:types.DirectoryInterce):Promise
  * @author wuwenqiang
  */
 export const getTenantListService = ():Promise<MyAwesomeData<types.TenantType[]>> => {
-  return httpRequest.get<types.TenantType[]>(api.getTenantsList);
+  return httpRequest.get<types.TenantType[]>(api.getUserTenantList);
 }
-
-/**
- * @description: 获取租户下的用户
- * @date: 2025-08-16 20:14
- * @author wuwenqiang
- */
-export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<types.TenantUserType|null>> => {
-  return httpRequest.get<types.TenantUserType|null>(`${api.getTenantUser}?tenantId=${tenantId}`);
-}
-
 
 /**
  * @description: 获取租户下的所有
@@ -167,6 +157,15 @@ export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<type
  */
 export const getTenantUserListService = (tenantId:string,pageNum:number,pageSize:number):Promise<MyAwesomeData<types.TenantUserType[]>> => {
   return httpRequest.get<types.TenantUserType[]>(`${api.getTenantUserList}?tenantId=${tenantId}&pageNum=${pageNum}&pageSize=${pageSize}`);
+}
+
+/**
+ * @description: 获取当前租户下当前用户的角色信息
+ * @date: 2025-09-7 18:56
+ * @author wuwenqiang
+ */
+export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<types.TenantUserType>> => {
+    return httpRequest.get<types.TenantUserType>(`${api.getTenantUser}?tenantId=${tenantId}`);
 }
 
 /**

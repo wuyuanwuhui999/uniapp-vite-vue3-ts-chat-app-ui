@@ -22,9 +22,9 @@ export default {
   createDir: "/service/ai/createDir",// 创建目录
   renameDir: "/service/ai/renameDir",// 重命名目录
   deleteDir: "/service/ai/deleteDir/",// 删除目录
-  getTenantsList: "/service/tenant/getTenantsList",// 获取用户当前的所有租户列表
-  getTenantUser: "/service/tenant/getTenantUser",// 获取当前租户下的用户
+  getUserTenantList: "/service/tenant/getUserTenantList",// 获取用户当前的所有租户列表
   getTenantUserList: "/service/tenant/getTenantUserList",// 获取当前租户下的用户列表
+  getTenantUser: "/service/tenant/getTenantUser",// 获取当前租户下当前用户角色信息
   addTenantUser:"/service/tenant/addTenantUser/",// 添加用户
   addAdmin:"/service/tenant/addAdmin",// 设置为管理员
   deleteAdmin:"/service/tenant/deleteAdmin"// 取消管理员
