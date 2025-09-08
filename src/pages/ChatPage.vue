@@ -251,7 +251,8 @@
 	const showCheckDocument = ref<boolean>(false);
 	const directoryList = reactive<DirectoryInterce[]>([{
 		directory:"默认文件夹",
-		id:"default"
+		id:"public",
+    tenantId:store.tenant?.id??"",
 	}]);
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
@@ -498,15 +499,14 @@
 	 * @author wuwenqiang
 	 */	
     const onUploadDoc = () => {
-		showDirDialog.value = true;
-		showMenu.value = false;
-		if(directoryList.length === 0){
-			getDirectoryListService().then((res)=>{
-				directoryList.push(...res.data);
-			});
-		}
-		
-	};
+      showDirDialog.value = true;
+      showMenu.value = false;
+      if(directoryList.length === 1){
+        getDirectoryListService().then((res)=>{
+          directoryList.push(...res.data);
+        });
+      }
+	  };
 
 	/**	
 	 * @description: 展示我的文档
@@ -781,7 +781,7 @@
 	 */
 	const onSetDocument = ()=>{
 		showCheckDocument.value = true;
-		if(directoryList.length === 0){
+		if(directoryList.length === 1){
 			getDirectoryListService().then((res)=>{
 				directoryList.push(...res.data);
 			});

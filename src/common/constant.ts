@@ -1,7 +1,7 @@
 import type{ TenantType } from "../types";
 
 // export const HOST:string = 'http://254a2y1767.qicp.vip';
-export const HOST:string = 'http://169.254.32.117:4001';
+export const HOST:string = 'http://169.254.32.117:3000';
 
 export const EMAIL_REG:RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;// 邮箱正则表达式
 
