@@ -1,5 +1,3 @@
-// import { type } from "os"
-import type {CircleEnum} from '../common/enum';
 import type { PositionEnum } from '../enum/index';
 
 export type UserDataType = {
@@ -85,6 +83,7 @@ export interface PayloadInterface {
   modelName: string;
   token: string; // 替换为实际用户ID
   chatId:string; // 替换为实际聊天ID
+  tenantId:string;
   type: string;
   prompt: string;
   showThink:boolean;
@@ -122,9 +121,10 @@ export interface DirectoryInterce {
 export interface TenantUserType {
   id: string; // 主键
   tenantId: string; // 租户id
+  tenantName: string;
   userId: string; // 用户id
   roleType: number; // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)
-  joinDate: Date; // 加入日期
+  joinDate: string; // 加入日期
   createBy: string; // 创建时间
   username: string; // 用户名
   avater?: string; // 头像
@@ -156,7 +156,7 @@ export interface AppStoreStateType {
   platform: string;
   device: string;
   version: string;
-  tenant: TenantType |null;
+  tenantUser: TenantUserType;
 }
 
 // 或者使用接口继承的方式

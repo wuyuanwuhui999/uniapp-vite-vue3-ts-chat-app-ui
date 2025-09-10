@@ -9,7 +9,7 @@ import md5 from 'md5';
  * @date: 2023-12-1 23:39
  * @author wuwenqiang
  */
-export const getUserDataService = (token:string):Promise<MyAwesomeData<types.UserDataType>>=> {
+export const getUserDataService = (token:string):Promise<MyAwesomeData<types.UserDataType>> => {
 	httpRequest.setToken(token);
 	return httpRequest.get<types.UserDataType>(api.getUserData,{},{noShowMsg:true});
 }
@@ -19,7 +19,7 @@ export const getUserDataService = (token:string):Promise<MyAwesomeData<types.Use
  * @description: 更新用户信息
  * @date: 2023-12-28 23:18
  */
-export const updateUserDataService = (userData:types.UserDataType):Promise<MyAwesomeData<number>>=>{
+export const updateUserDataService = (userData:types.UserDataType):Promise<MyAwesomeData<number>> => {
     return httpRequest.put<number>(api.updateUser,userData)
 };
 
@@ -28,7 +28,7 @@ export const updateUserDataService = (userData:types.UserDataType):Promise<MyAwe
  * @date: 2024-01-15 21:32
  * @author wuwenqiang
  */
-export const loginService = (userAccount:string,password:string):Promise<MyAwesomeData<types.UserDataType>>=>{
+export const loginService = (userAccount:string,password:string):Promise<MyAwesomeData<types.UserDataType>> => {
 	password = md5(password);
 	return httpRequest.post<types.UserDataType>(api.login,{userAccount,password})
 };
@@ -39,7 +39,7 @@ export const loginService = (userAccount:string,password:string):Promise<MyAweso
  * @date: 2024-01-19 23:51
  * @author wuwenqiang
  */
-export const registerService = (userData:types.UserDataType):Promise<MyAwesomeData<types.UserDataType>>=>{
+export const registerService = (userData:types.UserDataType):Promise<MyAwesomeData<types.UserDataType>> => {
 	userData.password = md5(userData.password);
 	return httpRequest.post<types.UserDataType>(api.register,userData)
 };
@@ -49,7 +49,7 @@ export const registerService = (userData:types.UserDataType):Promise<MyAwesomeDa
  * @date: 2024-01-19 23:51
  * @author wuwenqiang
  */
-export const vertifyUserService = (userData:types.UserDataType):Promise<MyAwesomeData<number>>=>{
+export const vertifyUserService = (userData:types.UserDataType):Promise<MyAwesomeData<number>> => {
 	return httpRequest.post<number>(api.vertifyUser,userData)
 };
 
@@ -58,11 +58,11 @@ export const vertifyUserService = (userData:types.UserDataType):Promise<MyAwesom
  * @date: 2025-01-19 22:59
  * @author wuwenqiang
  */
-export const sendEmailVertifyCodeService = (email:string):Promise<MyAwesomeData<number>>=>{
+export const sendEmailVertifyCodeService = (email:string):Promise<MyAwesomeData<number>> => {
     return httpRequest.post<number>(api.sendEmailVertifyCode,{email})
 }; 
 
-export const resetPasswordService = (email:string,password:string,code:number):Promise<MyAwesomeData<types.UserDataType>>=>{
+export const resetPasswordService = (email:string,password:string,code:number):Promise<MyAwesomeData<types.UserDataType>> => {
     password = md5(password);
     return httpRequest.post<types.UserDataType>(api.resetPassword,{email,password,code})
 }; 
@@ -72,7 +72,7 @@ export const resetPasswordService = (email:string,password:string,code:number):P
  * @date: 2025-01-28 14:22
  * @author wuwenqiang
  */
-export const updatePasswordService = (oldPassword:string,newPassword:string):Promise<MyAwesomeData<number>>=>{
+export const updatePasswordService = (oldPassword:string,newPassword:string):Promise<MyAwesomeData<number>> => {
     oldPassword = md5(oldPassword);
     newPassword = md5(newPassword);
     return httpRequest.put<number>(api.updatePassword,{oldPassword,newPassword},{noShowMsg:true})
@@ -83,7 +83,7 @@ export const updatePasswordService = (oldPassword:string,newPassword:string):Pro
  * @date: 2025-01-28 14:22
  * @author wuwenqiang
  */
-export const loginByEmailService = (email:string,code:string):Promise<MyAwesomeData<types.UserDataType>>=>{
+export const loginByEmailService = (email:string,code:string):Promise<MyAwesomeData<types.UserDataType>> => {
     return httpRequest.post<types.UserDataType>(api.loginByEmail,{email,code})
 }; 
 
@@ -111,7 +111,7 @@ export const getModelListService = ():Promise<MyAwesomeData<Array<types.ChatMode
  * @author wuwenqiang
  */
 export const getMyDocumentService = (directoryId:string,tenantId:string):Promise<MyAwesomeData<Array<types.DocumentInterface>>> => {
-    return httpRequest.get<Array<types.DocumentInterface>>(`${api.getDocList}?directoryId=${directoryId}`);
+    return httpRequest.get<Array<types.DocumentInterface>>(`${api.getDocList}?directoryId=${directoryId}&tenantId=${tenantId}`);
 }
 
 /**
@@ -128,8 +128,8 @@ export const deleteMyDocumentService = (docId:string,directoryId:string):Promise
  * @date: 2025-07-26 20:21
  * @author wuwenqiang
  */
-export const getDirectoryListService = ():Promise<MyAwesomeData<types.DirectoryInterce[]>> => {
-  return httpRequest.get<types.DirectoryInterce[]>(api.getDirectoryList);
+export const getDirectoryListService = (tenantId:string):Promise<MyAwesomeData<types.DirectoryInterce[]>> => {
+  return httpRequest.get<types.DirectoryInterce[]>(`${api.getDirectoryList}?tenantId=${tenantId}`);
 }
 
 /**
@@ -164,8 +164,8 @@ export const getTenantUserListService = (tenantId:string,pageNum:number,pageSize
  * @date: 2025-09-7 18:56
  * @author wuwenqiang
  */
-export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<types.TenantUserType>> => {
-    return httpRequest.get<types.TenantUserType>(`${api.getTenantUser}?tenantId=${tenantId}`);
+export const getTenantUserService = (tenantId:string):Promise<MyAwesomeData<types.TenantUserType|null>> => {
+    return httpRequest.get<types.TenantUserType|null>(`${api.getTenantUser}?tenantId=${tenantId}`);
 }
 
 /**

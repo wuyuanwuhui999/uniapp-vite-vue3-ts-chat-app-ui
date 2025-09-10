@@ -196,12 +196,35 @@
 	import icon_switch from '../../static/icon_switch.png';
 	import icon_menu_add from '../../static/icon_menu_add.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
-	import type {TenantType,OptionType,DocumentInterface,ChatHistoryType, ChatType, ChatStructure, ChatModelType, GroupedByChatIdType,FileType,PayloadInterface,UploadFile,UploadResponse,DirectoryInterce} from '../types';
+    import type {
+      TenantType,
+      OptionType,
+      DocumentInterface,
+      ChatHistoryType,
+      ChatType,
+      ChatStructure,
+      ChatModelType,
+      GroupedByChatIdType,
+      FileType,
+      PayloadInterface,
+      UploadFile,
+      UploadResponse,
+      DirectoryInterce,
+      TenantUserType
+    } from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
-	import { HOST, PAGE_SIZE,DEFAULT_TENANT } from '../common/constant';
+    import {HOST, PAGE_SIZE, DEFAULT_TENANT_USER} from '../common/constant';
 	import api from '@/api';
-	import { getChatHistoryService, getModelListService, getMyDocumentService,deleteMyDocumentService,getDirectoryListService,createDirectoryService }from "../service";
+    import {
+      getChatHistoryService,
+      getModelListService,
+      getMyDocumentService,
+      deleteMyDocumentService,
+      getDirectoryListService,
+      createDirectoryService,
+      getTenantUserService
+    } from "../service";
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
 	import uniSwipeActionItem from '@dcloudio/uni-ui/lib/uni-swipe-action-item/uni-swipe-action-item.vue';
@@ -252,7 +275,7 @@
 	const directoryList = reactive<DirectoryInterce[]>([{
 		directory:"默认文件夹",
 		id:"public",
-    tenantId:store.tenant?.id??"",
+    tenantId:store.tenantUser?.id??"",
 	}]);
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
@@ -300,6 +323,7 @@
 				type:type.value,
 				prompt: inputValue.value.trim(),
 				showThink:showThink.value,
+        tenantId:store.tenantUser?.tenantId!,
 				directoryId:directoryId.value,
 				language: LanguageMap[language.value],
 			};
@@ -502,7 +526,7 @@
       showDirDialog.value = true;
       showMenu.value = false;
       if(directoryList.length === 1){
-        getDirectoryListService().then((res)=>{
+        getDirectoryListService(store.tenantUser?.id??"").then((res)=>{
           directoryList.push(...res.data);
         });
       }
@@ -515,7 +539,7 @@
 	 */
 	const onShowMyDoc = () => {
 		uni.showLoading();
-		getMyDocumentService(directoryId.value,store.tenant?.id??"personal").then((res)=>{
+		getMyDocumentService(directoryId.value,store.tenantUser?.id??"personal").then((res)=>{
 			showMyDoc.value = true;
 			showMenu.value = false;
 			myDocList.length = 0;
@@ -654,7 +678,7 @@
 				title: "文件夹名称已存在"
 			});
 		}
-		createDirectoryService({directory:directoryName.value}).then((res)=>{
+		createDirectoryService({directory:directoryName.value,tenantId:store.tenantUser?.tenantId??""}).then((res)=>{
 			 uni.showToast({
 				duration:2000,
 				position:'center',
@@ -712,7 +736,7 @@
 				const uploadPromises = validFiles.map(file => {
 					return new Promise<void>((resolve, reject) => {
 						uni.uploadFile({
-						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}&tenantId=${store.tenant?.id}`, // 替换为你的上传接口URL
+						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}&tenantId=${store.tenantUser?.tenantId}`, // 替换为你的上传接口URL
 						filePath: file.path,
 						name: 'file',
 						formData: {
@@ -782,7 +806,7 @@
 	const onSetDocument = ()=>{
 		showCheckDocument.value = true;
 		if(directoryList.length === 1){
-			getDirectoryListService().then((res)=>{
+			getDirectoryListService(store.tenantUser?.tenantId??"").then((res)=>{
 				directoryList.push(...res.data);
 			});
 		}
@@ -804,14 +828,17 @@
 	 * @date: 2025-8-10 18:06
 	 */
 	const getStorageTenant = ()=>{
-		uni.getStorage({key:`${store.userData.id}:tenant`}).then((res)=>{
-			console.log(res.data)
-			if(res.data){
-				store.setTenant(JSON.parse(res.data) as TenantType);
-			}else{
-				store.setTenant(DEFAULT_TENANT);
-			}
-		});
+		uni.getStorage({key:`${store.userData.id}:tenantId`}).then((res)=>{
+      getTenantUserService(res.data??"").then((respone)=>{
+        if(respone.data){
+          store.setTenantUser(respone.data as TenantUserType);
+        }else{
+          store.setTenantUser(DEFAULT_TENANT_USER);
+        }
+      })
+		}).catch(()=>{
+      store.setTenantUser(DEFAULT_TENANT_USER);
+    });
 	}
 
 	getStorageTenant()

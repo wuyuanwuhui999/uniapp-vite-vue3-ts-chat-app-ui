@@ -1,4 +1,4 @@
-import type{ TenantType } from "../types";
+import type{ TenantType, TenantUserType} from "../types";
 
 // export const HOST:string = 'http://254a2y1767.qicp.vip';
 export const HOST:string = 'http://169.254.32.117:3000';
@@ -23,4 +23,18 @@ export const DEFAULT_TENANT:TenantType = {
     code: "personal",
     status: 1,
     created_by:"system"
+}
+
+export const DEFAULT_TENANT_USER:TenantUserType = {
+    id: "", // 主键
+    tenantId: 'personal', // 租户id
+    tenantName: "私人空间",
+    userId: "", // 用户id
+    roleType: 0, // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)
+    joinDate: '', // 加入日期
+    createBy: "", // 创建时间
+    username: '', // 用户名
+    avater: '', // 头像
+    disabled: 0,// 是否禁用
+    email: ''// 邮箱
 }

@@ -98,7 +98,7 @@ const store = useStore();
  * @date: 2025-08-30 21:48
  */
 const getTenantList = ()=>{
-  getTenantUserListService(store.tenant?.id??"",pageNum.value,PAGE_SIZE).then((res)=>{
+  getTenantUserListService(store.tenantUser?.tenantId??"",pageNum.value,PAGE_SIZE).then((res)=>{
     tenantUserList.push(...res.data);
     total.value = res.total;
   });

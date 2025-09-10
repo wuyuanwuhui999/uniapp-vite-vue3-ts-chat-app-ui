@@ -1,6 +1,6 @@
 <template>
 	<view class="page-wrapper">
-		<NavigatorTitleComponent :title="store.tenant?.name??'私人空间'"/>
+		<NavigatorTitleComponent :title="store.tenantUser?.tenantName"/>
 		<view class="page-body">
 			<view class="module-block">
 				<view class="row">
@@ -30,7 +30,7 @@
 				</view>
 			</view>
 			<button class="btn-user" @click="onTabTenant">切换租户</button>
-			<button class="btn-user" v-if="tenantUser?.roleType??0 > 0" @click="onManageTenant">租户管理</button>
+			<button class="btn-user" v-if="(store.tenantUser?.roleType??0) > 0" @click="onManageTenant">租户管理</button>
 			<button class="btn-user" @click="useUpdatePassword">修改密码</button>
 			<button class="btn-user btn-logout" @click="useLogout">退出登录</button>
 		</view>
@@ -63,7 +63,7 @@
 	import type { UserDataType,TenantType,OptionType,TenantUserType } from '../types';
 	import {updateUserDataService,getTenantListService,getTenantUserService} from '../service';
 	import defaulAvater from '../../static/default_avater.png';
-	import { SexMap,HOST, DEFAULT_TENANT} from '../common/constant';
+	import { SexMap,HOST, DEFAULT_TENANT_USER,DEFAULT_TENANT} from '../common/constant';
 	import icon_arrow from "../../static/icon_arrow.png"
 	import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 
@@ -74,12 +74,11 @@
 	const tenantOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const inputValue = ref<string>('');
 	const tenantList = reactive<TenantType[]>([DEFAULT_TENANT]);
+  const store = useStore();
 	const tenantOptionList = reactive<OptionType[]>([{
-		value: "0",
+		value: store.userData.id!,
 		text: "私人空间"
 	}]);
-	const currentTenant = ref<TenantType|null>(null);
-	const store = useStore();
 	const tenantUser = ref<TenantUserType|null>(null);
 
 	/**
@@ -188,10 +187,24 @@
 	 * @description: 切换租户
 	 * @date: 2025-8-10 18:06
 	 */
-	const onSelectTenant=(vallue:string)=>{
-		store.setTenant(tenantList.find((item)=>item.id===vallue)??null);
-		getTenantUser();
-		uni.setStorage({key:`${store.userData.id}:tenant`,data:JSON.stringify(currentTenant.value)});
+	const onSelectTenant=(value:string)=>{
+    getTenantUserService(value).then(res=>{
+      const data:TenantUserType = res.data ? res.data as TenantUserType : {
+        id: "", // 主键
+        tenantId: store.userData.id!, // 租户id
+        tenantName: "私人空间",
+        userId: store.userData.id!, // 用户id
+        roleType: 0, // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)
+        joinDate: "", // 加入日期
+        createBy: "", // 创建时间
+        username: store.userData.username, // 用户名
+        avater: store.userData.avater, // 头像
+        disabled: 0,// 是否禁用
+        email: store.userData.email// 邮箱
+      } as TenantUserType;
+      store.setTenantUser(data);
+      uni.setStorage({key:`${store.userData.id}:tenantId`,data:data.tenantId??""});
+    })
 	}
 
 	/**
@@ -204,23 +217,6 @@
 			url: `../pages/TenantManagePage`
 		})
 	}
-
-	/**
-	 * @author: wuwenqiang
-	 * @description: 获取租户下的用户
-	 * @date: 2025-8-16 20:20
-	 */
-	const getTenantUser = () =>{
-		if(store.tenant && store.tenant?.code !== DEFAULT_TENANT.code){
-			getTenantUserService(store.tenant?.id||"").then((res)=>{
-				tenantUser.value = res.data;
-			})
-		}else{
-			tenantUser.value = null;
-		}
-	}
-	
-	getTenantUser()
 </script>
 
 <style lang="less">
