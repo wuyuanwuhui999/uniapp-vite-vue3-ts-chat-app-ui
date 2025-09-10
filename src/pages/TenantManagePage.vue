@@ -1,6 +1,6 @@
 <template>
     <view class="page-wrapper">
-		<NavigatorTitleComponent :title="store.tenant?.name">
+		<NavigatorTitleComponent :title="store.tenantUser?.tenantName">
 			<template #default>
 				<image class="icon-small" @click="onShowAddDialog" :src="icon_menu_add"/>
 			</template>
