@@ -110,8 +110,8 @@ export const getModelListService = ():Promise<MyAwesomeData<Array<types.ChatMode
  * @date: 2025-06-21 13:48
  * @author wuwenqiang
  */
-export const getMyDocumentService = (directoryId:string,tenantId:string):Promise<MyAwesomeData<Array<types.DocumentInterface>>> => {
-    return httpRequest.get<Array<types.DocumentInterface>>(`${api.getDocList}?directoryId=${directoryId}&tenantId=${tenantId}`);
+export const getMyDocumentService = (tenantId:string):Promise<MyAwesomeData<Array<types.DocumentInterface>>> => {
+    return httpRequest.get<Array<types.DocumentInterface>>(`${api.getDocList}?tenantId=${tenantId}`);
 }
 
 /**

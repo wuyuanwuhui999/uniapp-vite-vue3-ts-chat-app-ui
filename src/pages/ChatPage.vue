@@ -134,7 +134,7 @@
 			<template #content>
 				<view class="directory-wrapper">
 					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-						<radio-group class="directory-list module-block" v-model="directoryId">
+						<radio-group class="directory-list module-block" @change="onSelectDirectory">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
 								<text class="directory-name">{{ item.directory }}</text>
 								<radio :checked="directoryId === item.id" :value="item.id"></radio>
@@ -170,7 +170,7 @@
 			<template #content>
 				<view class="directory-wrapper">
 					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-						<radio-group class="directory-list module-block" v-model="mDirectoryId">
+						<radio-group class="directory-list module-block" @change="onSelectDoc">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
 								<text class="directory-name">{{ item.directory }}</text>
 								<radio :checked="mDirectoryId === item.id" :value="item.id"></radio>
@@ -197,7 +197,6 @@
 	import icon_menu_add from '../../static/icon_menu_add.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
     import type {
-      TenantType,
       OptionType,
       DocumentInterface,
       ChatHistoryType,
@@ -539,7 +538,7 @@
 	 */
 	const onShowMyDoc = () => {
 		uni.showLoading();
-		getMyDocumentService(directoryId.value,store.tenantUser?.id??"personal").then((res)=>{
+		getMyDocumentService(store.tenantUser?.tenantId??"personal").then((res)=>{
 			showMyDoc.value = true;
 			showMenu.value = false;
 			myDocList.length = 0;
@@ -695,8 +694,16 @@
 		})
 	}
 
-	
+	const onSelectDirectory = (event:Event)=>{
+    directoryId.value = event.detail.value;
+  }
+
+  const onSelectDoc = (event:Event)=>{
+    mDirectoryId.value = event.detail.value;
+  }
+
 	const onUploadSure = ()=>{
+    debugger
 		uni.chooseFile({
 			count: 9,
 			type: 'file',
