@@ -134,7 +134,7 @@
 			<template #content>
 				<view class="directory-wrapper">
 					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-						<radio-group class="directory-list" v-model="directoryId">
+						<radio-group class="directory-list module-block" v-model="directoryId">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
 								<text class="directory-name">{{ item.directory }}</text>
 								<radio :checked="directoryId === item.id" :value="item.id"></radio>
@@ -170,7 +170,7 @@
 			<template #content>
 				<view class="directory-wrapper">
 					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-						<radio-group class="directory-list" v-model="mDirectoryId">
+						<radio-group class="directory-list module-block" v-model="mDirectoryId">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
 								<text class="directory-name">{{ item.directory }}</text>
 								<radio :checked="mDirectoryId === item.id" :value="item.id"></radio>
@@ -736,7 +736,7 @@
 				const uploadPromises = validFiles.map(file => {
 					return new Promise<void>((resolve, reject) => {
 						uni.uploadFile({
-						url: `${HOST}${api.uploadDoc}?directoryId=${directoryId.value}&tenantId=${store.tenantUser?.tenantId}`, // 替换为你的上传接口URL
+						url: `${HOST}${api.uploadDoc}/${store.tenantUser.tenantId}/${directoryId.value}`, // 替换为你的上传接口URL
 						filePath: file.path,
 						name: 'file',
 						formData: {
@@ -1047,14 +1047,12 @@
 				}
 			}
 		}
-		.side-wrapper{
-
-		}
 		.directory-wrapper{
 			height: 100%;
 			display: flex;
 			flex-direction: column;
 			gap:@page-padding;
+      background: @page-background-color;
 			.create-directory{
 				display: flex;
 				justify-content: space-between;
@@ -1064,11 +1062,21 @@
 			.directory-scroll{
 				flex: 1;
 				height: 0;
+        margin-bottom: @page-padding;
 				.directory-list{
+          margin: @page-padding;
 					.directory-item{
 						display: flex;
 						align-items: center;
 						padding: @page-padding;
+            border-bottom: 1rpx solid @disable-text-color;
+            &:first-child{
+              padding-top: 0;
+            }
+            &:last-child{
+              border-bottom: none;
+              padding-bottom: 0;
+            }
 						.directory-name{
 							flex: 1;
 							width: 0;
@@ -1083,6 +1091,7 @@
 				display: flex;
 				gap:@page-padding;
 				padding: @page-padding;
+        background: @module-background-color;
 				.dialog-btn{
 					flex: 1;
 					height: @btn-height;
