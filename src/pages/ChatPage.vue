@@ -143,7 +143,7 @@
 					</scroll-view>
 					<view class="dialog-btn-wrapper">
 						<text class="dialog-btn dialog-btn-sure" @click="onUploadSure">确定</text>
-						<text class="dialog-btn dialog-btn-cancle" @click="showCheckDocument = false">取消</text>
+						<text class="dialog-btn dialog-btn-cancle" @click="showDirDialog = false">取消</text>
 					</view>
 				</view>
 				<view class="create-dialog" v-if="showCreateDialog">
@@ -154,7 +154,7 @@
 							<input class="directory-input" v-model="directoryName">
 						</view>
 						<view class="create-btn-wrapper">
-							<text class="create-btn create-sure" @click="">确定</text>
+							<text class="create-btn create-sure" @click="onSureCreate">确定</text>
 							<text class="create-btn create-cancle" @click="showCreateDialog = false">取消</text>
 						</view>
 					</view>
@@ -524,11 +524,10 @@
     const onUploadDoc = () => {
       showDirDialog.value = true;
       showMenu.value = false;
-      if(directoryList.length === 1){
-        getDirectoryListService(store.tenantUser?.id??"").then((res)=>{
-          directoryList.push(...res.data);
-        });
-      }
+      directoryList.splice(1,directoryList.length);
+      getDirectoryListService(store.tenantUser.tenantId??"").then((res)=>{
+        directoryList.push(...res.data);
+      });
 	  };
 
 	/**	
@@ -812,11 +811,9 @@
 	 */
 	const onSetDocument = ()=>{
 		showCheckDocument.value = true;
-		if(directoryList.length === 1){
-			getDirectoryListService(store.tenantUser?.tenantId??"").then((res)=>{
-				directoryList.push(...res.data);
-			});
-		}
+    getDirectoryListService(store.tenantUser?.tenantId??"").then((res)=>{
+      directoryList.splice(1,directoryList.length,...res.data);
+    });
 	}
 
 	/**	
@@ -847,6 +844,25 @@
       store.setTenantUser(DEFAULT_TENANT_USER);
     });
 	}
+
+    /**
+     * @author: wuwenqiang
+     * @description: 获取租户i
+     * @date: 2025-8-10 18:06
+     */
+  const onSureCreate = ()=>{
+      createDirectoryService({directory:directoryName.value,tenantId:store.tenantUser.tenantId}).then(res=>{
+        if(res.data){
+          directoryList.splice(1,0,res.data);
+        }
+        showCreateDialog.value = false;
+        uni.showToast({
+          duration:2000,
+          position:'center',
+          title: `创建文件夹${res.data ? '成功' :'失败'}`
+        })
+      })
+  }
 
 	getStorageTenant()
 </script>
