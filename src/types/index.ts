@@ -26,7 +26,7 @@ export type ChatStructure = {
 }
 
 export type ChatModelType = {
-  id:number,
+  id:string,
   modelName:string,
   updateTime:string,
   createTime:string
@@ -80,7 +80,7 @@ export interface UploadResponse {
 }
 
 export interface PayloadInterface {
-  modelName: string;
+  modelId: string;
   token: string; // 替换为实际用户ID
   chatId:string; // 替换为实际聊天ID
   tenantId:string;

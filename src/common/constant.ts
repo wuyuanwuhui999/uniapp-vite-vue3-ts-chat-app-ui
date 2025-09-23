@@ -27,7 +27,7 @@ export const DEFAULT_TENANT:TenantType = {
 
 export const DEFAULT_TENANT_USER:TenantUserType = {
     id: "", // 主键
-    tenantId: 'personal', // 租户id
+    tenantId: '', // 租户id
     tenantName: "私人空间",
     userId: "", // 用户id
     roleType: 0, // 用户角色 (0-普通用户，1-租户管理员，2-超级管理员)

@@ -2,7 +2,7 @@
 	<view class="page-wrapper">
 		<view class="page-header">
 			<AvaterComponent size="small"/>
-			<text class="my-favorite">当前接入模型：{{ activeModel }}</text>
+			<text class="my-favorite">当前接入模型：{{ chatModelList[activeModelIndex]?.modelName }}</text>
 			<view class="menu-wrapper">
 				<image class="icon-small icon-record" @click="onShowMenu" :src="icon_menu"/>
 				<template v-if="showMenu">
@@ -247,7 +247,7 @@
 	const inputValue = ref<string>("");
 	const store = useStore();
 	const scrollTop = ref<number>(0);
-	const activeModel = ref<string>("");
+	const activeModelIndex = ref<number>(0);
 	const showMenu = ref<boolean>(false);
 	const showMyDoc = ref<boolean>(false);
 	const myDocList = reactive<DocumentInterface[][]>([]);
@@ -291,8 +291,8 @@
 	 */
 	getModelListService().then((res)=>{
 		chatModelList.push(...res.data);
-		res.data.forEach((item)=>chatModelOption.push({value:item.modelName,text:item.modelName}));
-		activeModel.value = res.data[0].modelName;
+		res.data.forEach((item,index)=>chatModelOption.push({value:index,text:item.modelName}));
+    activeModelIndex.value = 0;
 	});
 
     /**
@@ -316,7 +316,7 @@
 			}
 			chatList.push(item);
 			const payload:PayloadInterface = {
-				modelName: activeModel.value,
+				modelId: chatModelList[activeModelIndex.value].id,
 				token: store.token, // 替换为实际用户ID
 				chatId, // 替换为实际聊天ID
 				type:type.value,
@@ -458,7 +458,7 @@
 			socketTask = uni.connectSocket({
 				url: `${HOST.replace(/http[s]?/,'ws')}${api.chatWs}`,
 				success: (res) => {
-					console.error('WebSocket 连接成功:', res);
+					console.log('WebSocket 连接成功:', res);
 					
 				},
 				fail: (err) => {
@@ -614,9 +614,8 @@
 	 * @date: 2025-07-05 18:47
 	 * @author wuwenqiang
 	 */
-	const onCheckModel = (model:string|number) => {
-		console.log("model=",model)
-		activeModel.value = model.toString()
+	const onCheckModel = (index:number) => {
+    activeModelIndex.value = index
 	}
 
 	/**	
@@ -837,14 +836,19 @@
         if(respone.data){
           store.setTenantUser(respone.data as TenantUserType);
         }else{
-          store.setTenantUser(DEFAULT_TENANT_USER);
+          store.setTenantUser(getDefaultTenantUser());
         }
       })
 		}).catch(()=>{
-      store.setTenantUser(DEFAULT_TENANT_USER);
+      store.setTenantUser(getDefaultTenantUser());
     });
 	}
 
+  const getDefaultTenantUser = ():TenantUserType=>{
+    const defaultTenantUser:TenantUserType = {...DEFAULT_TENANT_USER};
+    defaultTenantUser.tenantId = store.userData.id!;
+    return defaultTenantUser;
+  }
     /**
      * @author: wuwenqiang
      * @description: 获取租户i

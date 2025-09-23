@@ -1,6 +1,6 @@
 <template>
     <view class="page-wrapper">
-		<NavigatorTitleComponent :title="store.tenantUser?.tenantName">
+		<NavigatorTitleComponent title="租户管理">
 			<template #default>
 				<image class="icon-small" @click="onShowAddDialog" :src="icon_menu_add"/>
 			</template>
@@ -17,7 +17,12 @@
                 </view>
                 <template v-slot:right>
                   <view class="button-wrapper">
-                    <view class="op-button set-admin-button"><text @click="onAdmin(item)" class="button-text">{{item.roleType === 1 ? '取消管理员' :'设为管理员'}}</text></view><view class="op-button delete-button"><text @click="onDeleteTenantUser(item)" class="button-text">删除</text></view>
+                    <view class="op-button set-admin-button">
+                      <text @click="onAdmin(item)" class="button-text">{{item.roleType === 1 ? '取消管理员' :'设为管理员'}}</text>
+                    </view>
+                    <view class="op-button delete-button">
+                      <text @click="onDeleteTenantUser(index)" class="button-text">删除</text>
+                    </view>
                   </view>
                 </template>
               </uniSwipeActionItem>
@@ -59,7 +64,7 @@
         </view>
       </template>
     </DialogComponent>
-    <PopupComponent :text="'是否删除用户 ' + deleteTenantUser?.username" @on-sure="sureDeleteDoc" ref="popupComponent"></PopupComponent>
+    <PopupComponent :text="'是否删除用户 ' + tenantUserList[deleteIndex]?.username" @on-sure="sureDeleteTenantUser" ref="popupComponent"></PopupComponent>
 	</view>
 </template>
 
@@ -68,7 +73,10 @@ import icon_menu_add from "../../static/icon_menu_add.png"
 import NavigatorTitleComponent from '../components/NavigatorTitleComponent.vue';
 import type{TenantUserType, UserWithChecked} from "../types";
 import {reactive, ref} from "vue";
-import {getTenantUserListService,searchUserListService,addTenantUserService,addAdminService,deleteAdminService} from "../service";
+import {
+  getTenantUserListService, searchUserListService, addTenantUserService, addAdminService, deleteAdminService,
+  deleteTenantUserService
+} from "../service";
 import { useStore } from '../stores/useStore';
 import {HOST, PAGE_SIZE} from "../common/constant";
 import defaulAvater from "../../static/default_avater.png";
@@ -81,7 +89,7 @@ import uniSwipeActionItem from '@dcloudio/uni-ui/lib/uni-swipe-action-item/uni-s
 import PopupComponent from "../components/PopupComponent.vue";
 
 const popupComponent = ref<null | InstanceType<typeof PopupComponent>>(null);
-const deleteTenantUser = ref<TenantUserType|null>(null);
+const deleteIndex = ref<number>(-1);
 const showAddDialog = ref<boolean>(false);
 const total = ref<number>(0);// 总数
 const pageNum = ref<number>(1);
@@ -133,7 +141,7 @@ const onSearchUser = () => {
  * @date: 2025-08-30 21:48
  */
 const getSearchUserList = ()=>{
-  searchUserListService(inputValue.value,store.tenant?.id??"",searchPageNum.value,PAGE_SIZE).then((res)=>{
+  searchUserListService(inputValue.value,store.tenantUser.tenantId,searchPageNum.value,PAGE_SIZE).then((res)=>{
     searchUserTotal.value = res.total;
     searchUserList.push(...res.data);
   })
@@ -164,7 +172,7 @@ const addTenant = (item:UserWithChecked)=>{
       title: "该用户已添加"
     });
   }else{
-    addTenantUserService(store.tenant!.id,item.id!).then((res)=>{
+    addTenantUserService(store.tenantUser.tenantId,item.id!).then((res)=>{
       uni.showToast({
         duration:2000,
         position:'center',
@@ -191,14 +199,14 @@ const onShowAddDialog = ()=>{
  * @description: 删除租户
  * @date: 2025-09-02 07:39
  */
-const onDeleteTenantUser = (item:TenantUserType)=>{
-  deleteTenantUser.value = item;
+const onDeleteTenantUser = (index:number)=>{
+  deleteIndex.value = index;
   popupComponent.value?.popup.value?.open('top');
 }
 
 const onAdmin = (item:TenantUserType)=>{
   if(item.roleType === 1){
-    deleteAdminService(store.tenant?.id!,item.userId).then((res)=>{
+    deleteAdminService(store.tenantUser.tenantId!,item.userId).then((res)=>{
       item.roleType = 0;
       uni.showToast({
         duration:2000,
@@ -207,7 +215,7 @@ const onAdmin = (item:TenantUserType)=>{
       })
     })
   }else{
-    addAdminService(store.tenant?.id!,item.userId).then((res)=>{
+    addAdminService(store.tenantUser.tenantId,item.userId).then((res)=>{
       item.roleType = 1;
       uni.showToast({
         duration:2000,
@@ -223,8 +231,30 @@ const onAdmin = (item:TenantUserType)=>{
  * @description: 确认删除
  * @date: 2025-09-02 07:39
  */
-const sureDeleteDoc = ()=>{
-
+const sureDeleteTenantUser = ()=>{
+  deleteTenantUserService(store.tenantUser.tenantId,tenantUserList[deleteIndex.value].userId).then((res)=>{
+    if(res.data){
+      uni.showToast({
+        duration:2000,
+        position:'center',
+        title: "删除用户成功"
+      })
+      tenantUserList.splice(deleteIndex.value,1);
+      popupComponent.value?.popup.value?.close();
+    }else{
+      uni.showToast({
+        duration:2000,
+        position:'center',
+        title: "删除用户失败"
+      })
+    }
+  }).catch((err)=>{
+    uni.showToast({
+      duration:2000,
+      position:'center',
+      title: err.msg || "删除用户失败"
+    })
+  });
 }
 getTenantList();
 </script>
