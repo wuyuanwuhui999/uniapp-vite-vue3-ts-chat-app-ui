@@ -213,5 +213,14 @@ export const deleteTenantUserService = (tenantId:string,userId:string):Promise<M
     return httpRequest.delete<types.TenantUserType>(`${api.deleteTenantUser}/${tenantId}/${userId}`);
 }
 
+/**
+ * @description: 查询提示词类别
+ * @date: 2025-10-12 22:26
+ * @author wuwenqiang
+ */
+export const getPromptCategoryListService = ():Promise<MyAwesomeData<types.PromptCategoryType[]>> => {
+    return httpRequest.delete<types.PromptCategoryType[]>(api.getPromptCategoryList);
+}
+
 
 

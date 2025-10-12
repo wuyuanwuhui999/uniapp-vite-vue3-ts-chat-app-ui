@@ -16,6 +16,8 @@
 							<view class="menu-item" @click="onShowHistory">会话记录</view>
 							<view class="menu-line"></view>
 							<view class="menu-item" @click="onSwitchModel">切换模型</view>
+							<view class="menu-line"></view>
+							<view class="menu-item" @click="onPrompt">设置提示词</view>
 						</view>
 					</view>
 					<view class="menu-mask" @click="onHideMenu"></view>
@@ -844,29 +846,33 @@
     });
 	}
 
-  const getDefaultTenantUser = ():TenantUserType=>{
-    const defaultTenantUser:TenantUserType = {...DEFAULT_TENANT_USER};
-    defaultTenantUser.tenantId = store.userData.id!;
-    return defaultTenantUser;
-  }
+	const getDefaultTenantUser = ():TenantUserType=>{
+		const defaultTenantUser:TenantUserType = {...DEFAULT_TENANT_USER};
+		defaultTenantUser.tenantId = store.userData.id!;
+		return defaultTenantUser;
+	}
     /**
      * @author: wuwenqiang
      * @description: 获取租户i
      * @date: 2025-8-10 18:06
      */
-  const onSureCreate = ()=>{
-      createDirectoryService({directory:directoryName.value,tenantId:store.tenantUser.tenantId}).then(res=>{
-        if(res.data){
-          directoryList.splice(1,0,res.data);
-        }
-        showCreateDialog.value = false;
-        uni.showToast({
-          duration:2000,
-          position:'center',
-          title: `创建文件夹${res.data ? '成功' :'失败'}`
-        })
-      })
-  }
+	const onSureCreate = ()=>{
+		createDirectoryService({directory:directoryName.value,tenantId:store.tenantUser.tenantId}).then(res=>{
+			if(res.data){
+			directoryList.splice(1,0,res.data);
+			}
+			showCreateDialog.value = false;
+			uni.showToast({
+			duration:2000,
+			position:'center',
+			title: `创建文件夹${res.data ? '成功' :'失败'}`
+			})
+		})
+	}
+
+	const onPrompt = ()=>{
+		uni.navigateTo({url: `../pages/PromptPage`})
+	}
 
 	getStorageTenant()
 </script>

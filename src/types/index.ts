@@ -163,3 +163,11 @@ export interface AppStoreStateType {
 export interface UserWithChecked extends UserDataType {
   checked: number;
 }
+
+// 提示词类别
+export interface PromptCategoryType {
+  id: string;
+  category: string;
+  createTime: string
+  updateTime: string;
+}
