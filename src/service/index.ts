@@ -219,7 +219,7 @@ export const deleteTenantUserService = (tenantId:string,userId:string):Promise<M
  * @author wuwenqiang
  */
 export const getPromptCategoryListService = ():Promise<MyAwesomeData<types.PromptCategoryType[]>> => {
-    return httpRequest.delete<types.PromptCategoryType[]>(api.getPromptCategoryList);
+    return httpRequest.get<types.PromptCategoryType[]>(api.getPromptCategoryList);
 }
 
 
