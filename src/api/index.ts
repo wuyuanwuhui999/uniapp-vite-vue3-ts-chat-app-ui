@@ -29,5 +29,6 @@ export default {
   addAdmin:"/service/tenant/addAdmin",// 设置为管理员
   deleteAdmin:"/service/tenant/deleteAdmin",// 取消管理员
   deleteTenantUser:"/service/tenant/deleteTenantUser",// 取消管理员
-  getPromptCategoryList: "/service/prompt/getPromptCategoryList"// 获取提示词类别
+  getPromptCategoryList: "/service/prompt/getPromptCategoryList",// 获取提示词类别
+  getSystemPromptListByCategory: "/service/prompt/getSystemPromptListByCategory"// 获取系统提示词列表
 };

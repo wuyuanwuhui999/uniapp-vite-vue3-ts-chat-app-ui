@@ -171,3 +171,14 @@ export interface PromptCategoryType {
   createTime: string
   updateTime: string;
 }
+
+// 提示词类别
+export interface SystemPromptType {
+  id: string;
+  prompt: string;
+  category:string;
+  isLike?:number;
+  disabled:number;
+  createTime: string
+  updateTime: string;
+}

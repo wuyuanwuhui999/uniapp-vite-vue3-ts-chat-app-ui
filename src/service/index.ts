@@ -222,5 +222,13 @@ export const getPromptCategoryListService = ():Promise<MyAwesomeData<types.Promp
     return httpRequest.get<types.PromptCategoryType[]>(api.getPromptCategoryList);
 }
 
+/**
+ * @description: 查询提示词类别
+ * @date: 2025-10-12 22:26
+ * @author wuwenqiang
+ */
+export const getSystemPromptListByCategoryService = (categoryId:string,keyword:string,pageNum:number,pageSize:number):Promise<MyAwesomeData<types.SystemPromptType[]>> => {
+    return httpRequest.get<types.SystemPromptType[]>(`${api.getSystemPromptListByCategory}?categoryId=${categoryId}&keyword=${keyword}&pageNum=${pageNum}&pageSize=${pageSize}`);
+}
 
 
