@@ -17,7 +17,7 @@
 							<view class="menu-line"></view>
 							<view class="menu-item" @click="onSwitchModel">切换模型</view>
 							<view class="menu-line"></view>
-							<view class="menu-item" @click="onPrompt">设置提示词</view>
+							<view class="menu-item" @click="onSettingPrompt">设置提示词</view>
 						</view>
 					</view>
 					<view class="menu-mask" @click="onHideMenu"></view>
@@ -46,7 +46,8 @@
 												<text>{{ item.responseContent }}</text>
 											</view>
 									</view>
-								</view>								
+								</view>		
+								<image v-if="item.type === 'system'" @click="onEditPrompt" :src="icon_edit" class="icon-small"/>
 							</template>
 							<template v-else-if="item.text">
 								<view class="chat-prompt-wrapper">
@@ -197,6 +198,7 @@
 	import icon_chat from '../../static/icon_chat.png';
 	import icon_switch from '../../static/icon_switch.png';
 	import icon_menu_add from '../../static/icon_menu_add.png';
+	import icon_edit from "../../static/icon_edit.png"
 	import AvaterComponent from '../components/AvaterComponent.vue';
     import type {
       OptionType,
@@ -259,7 +261,8 @@
 	const chatList = reactive<Array<ChatType>>([
 		{
 			responseContent:"你好，我是智能音乐助手小吴同学，请问有什么可以帮助您？",
-			position: PositionEnum.LEFT
+			position: PositionEnum.LEFT,
+			type:"system"
 		}
 	]);
 	const chatModelList = reactive<Array<ChatModelType>>([]);
@@ -294,7 +297,7 @@
 	getModelListService().then((res)=>{
 		chatModelList.push(...res.data);
 		res.data.forEach((item,index)=>chatModelOption.push({value:index,text:item.modelName}));
-    activeModelIndex.value = 0;
+    	activeModelIndex.value = 0;
 	});
 
     /**
@@ -322,9 +325,10 @@
 				token: store.token, // 替换为实际用户ID
 				chatId, // 替换为实际聊天ID
 				type:type.value,
+				systemPrompt:store.prompt,
 				prompt: inputValue.value.trim(),
 				showThink:showThink.value,
-        tenantId:store.tenantUser?.tenantId!,
+        		tenantId:store.tenantUser?.tenantId!,
 				directoryId:directoryId.value,
 				language: LanguageMap[language.value],
 			};
@@ -339,7 +343,7 @@
 				},
 				fail: (err) => {
 					uni.showToast({
-					duration: 2000,
+						duration: 2000,
 						position: 'center',
 						title: '发送消息失败：' + err.toString()
 					});
@@ -834,16 +838,21 @@
 	 */
 	const getStorageTenant = ()=>{
 		uni.getStorage({key:`${store.userData.id}:tenantId`}).then((res)=>{
-      getTenantUserService(res.data??"").then((respone)=>{
-        if(respone.data){
-          store.setTenantUser(respone.data as TenantUserType);
-        }else{
-          store.setTenantUser(getDefaultTenantUser());
-        }
-      })
-		}).catch(()=>{
-      store.setTenantUser(getDefaultTenantUser());
-    });
+			getTenantUserService(res.data??"").then((respone)=>{
+				if(respone.data){
+				store.setTenantUser(respone.data as TenantUserType);
+				}else{
+				store.setTenantUser(getDefaultTenantUser());
+				}
+			})
+				}).catch(()=>{
+			store.setTenantUser(getDefaultTenantUser());
+		});
+		uni.getStorage({key:`${store.userData.id}:prompt`}).then((res)=>{
+			if(res.data){
+				store.setPrompt(res.data)
+			}
+		})
 	}
 
 	const getDefaultTenantUser = ():TenantUserType=>{
@@ -870,8 +879,12 @@
 		})
 	}
 
-	const onPrompt = ()=>{
+	const onSettingPrompt = ()=>{
 		uni.navigateTo({url: `../pages/PromptPage`})
+	}
+
+	const onEditPrompt = ()=>{
+		uni.navigateTo({url: `../pages/SettingPromptPage`})
 	}
 
 	getStorageTenant()

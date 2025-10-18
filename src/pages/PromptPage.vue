@@ -10,13 +10,36 @@
             <scroll-view class="scroll-view" scroll-y show-scrollbar="false" @scrolltolower="onLoadMoreUser">
                 <view class="prompt-wrapper">
                     <view class="module-block prompt-list">
-                        <view class="prompt-item" v-for="item in systemPromptTypeList">
+                        <!-- <view class="prompt-item" v-for="item in systemPromptTypeList">
                             <text class="prompt-text">{{ item.prompt }}</text>
                             <view class="prompt-icon-wrapper">
-                                <img :src="icon_copy" class="icon-small" @click="onCopy"/>
-                                <img :src="item.isLike ? icon_full_star : icon_empty_star" class="icon-small"/>
+                                <image :src="icon_copy" class="icon-small" @click="onCopy"/>
+                                <image :src="item.isCollect ? icon_full_star : icon_empty_star" @click="onCollectPrompt(item)" class="icon-small"/>
                             </view>
-                        </view>
+                        </view> -->
+                        <uniSwipeAction>
+                            <template v-for="item,index in systemPromptTypeList" :key="'prompt-item'+index">
+                                <uniSwipeActionItem>
+                                    <view class="prompt-item" :class="{'prompt-item-first':index == 0,'prompt-item-last':index === systemPromptTypeList.length - 1}">
+                                        <text class="prompt-text">{{ item.prompt }}</text>
+                                        <view class="prompt-icon-wrapper">
+                                            <image :src="icon_copy" class="icon-small" @click="onCopy"/>
+                                        </view>
+                                    </view>
+                                    <template v-slot:right>
+                                        <view class="button-wrapper">
+                                            <view class="op-button set-admin-button">
+                                                <text @click="onUsePrompt(item.prompt)" class="button-text">{{store.prompt === item.prompt ? '取消使用提示词' :'使用提示词'}}</text>
+                                            </view>
+                                            <view class="op-button set-admin-button">
+                                                <text @click="onCollectPrompt(item)" class="button-text">{{item.isCollect ? '取消收藏' : '收藏'}}</text>
+                                            </view>
+                                        </view>
+                                    </template>
+                                </uniSwipeActionItem>
+                                <view class="line" v-if="index < systemPromptTypeList.length - 1"></view>
+                            </template>
+                        </uniSwipeAction>
                     </view>
                 </view>
                 
@@ -28,19 +51,19 @@
 <script lang="ts" setup>
     import { reactive,ref } from "vue";
     import NavigatorTitleComponent from "../components/NavigatorTitleComponent.vue";
-    import { getPromptCategoryListService,getSystemPromptListByCategoryService } from "../service";
+    import { getPromptCategoryListService,getSystemPromptListByCategoryService,insertCollectPromptService, deleteCollectPromptService } from "../service";
     import type { PromptCategoryType,SystemPromptType } from "../types";
     import icon_search from "../../static/icon_search.png";
     import { PAGE_SIZE } from "../common/constant";
-    import icon_empty_star from "../../static/icon_empty_star.png";
-    import icon_full_star from "../../static/icon_full_star.png";
     import icon_copy from "../../static/icon_copy.png";
+	import { useStore } from "../stores/useStore";
     const promptCategoryList = reactive<PromptCategoryType[]>([]);
     const systemPromptTypeList = reactive<SystemPromptType[]>([]);
     const activeIndex = ref<number>(0);
     const pageNum = ref<number>(1);
     const keyword = ref<string>("");
     const total = ref<number>(0);
+	const store = useStore();
 
     const getSystemPromptListByCategory = ()=>{
         getSystemPromptListByCategoryService(promptCategoryList[activeIndex.value].id,keyword.value,pageNum.value,PAGE_SIZE).then((res)=>{
@@ -92,6 +115,42 @@
         })        
     }
     
+     /**
+	 * @author: wuwenqiang
+	 * @description: 新增和取消收藏
+	 * @date: 2025-10-18 11:22
+	 */
+    const onCollectPrompt = (item:SystemPromptType)=>{
+        if(item.isCollect){
+            deleteCollectPromptService(item.id).then((res)=>{
+                uni.showToast({
+                    duration: 2000,
+                    position: 'center',
+                    title: `取消收藏${res.data > 0 ? '成功' : '失败'}`
+                })
+                if(res.data > 0)item.isCollect = 0;
+            })
+        }else{
+            insertCollectPromptService(item.id).then((res)=>{
+                uni.showToast({
+                    duration: 2000,
+                    position: 'center',
+                    title: `新增收藏${res.data > 0 ? '成功' : '失败'}`
+                })
+                if(res.data > 0)item.isCollect = 1;
+            })
+        }
+    }
+
+     /**
+	 * @author: wuwenqiang
+	 * @description: 使用或者取消提示词
+	 * @date: 2025-10-18 11:22
+	 */
+    const onUsePrompt = (prompt:string)=>{
+        if(store.prompt === prompt)prompt=""
+        store.setPrompt(prompt)
+    }
 </script>
 
 <style lang="less">
@@ -99,9 +158,6 @@
 	@import '../theme/size.less';
 	@import '../theme/style.less';
     .page-wrapper{
-        .icon-small{
-            filter: grayscale(100%);
-        }
 		.page-body{
 			margin: 0 @page-padding;
             flex: 1;
@@ -137,13 +193,12 @@
                         .prompt-item{
                             padding-top: @page-padding;
                             padding-bottom: @page-padding;
-                            border-bottom: 1rpx solid @disable-text-color;
                             display: flex;
-                            &:first-child{
-                                padding-top: 0
+                            &.prompt-item-first{
+                                padding-top: 0;
                             }
-                            &:last-child{
-                                border-bottom:none;
+                            &.prompt-item-last{
+                                padding-bottom: 0;
                             }
                             .prompt-text{
                                 flex: 1;
@@ -162,7 +217,36 @@
                                 align-items: center;
                             }
                         }
+                        .line{
+                            height: 1rpx;
+                            background: @disable-text-color;
+                        }
+                        .button-wrapper{
+                            display: flex;
+                            .op-button{
+                                display: flex;
+                                height: 100%;
+                                flex-direction: row;
+                                justify-content: center;
+                                align-items: center;
+
+                                margin-left: @page-padding;
+                                &.delete-button{
+                                background-color: @warn-color;
+                                color: @module-background-color;
+                                }
+                                &.set-admin-button{
+                                background-color: @line-color;
+                                color: @module-background-color;
+                                }
+                                .button-text{
+                                padding: 0 calc(@page-padding * 2);
+                                }
+                            }
+                            }
+                        
                     }
+                    
                 }
                 
             }

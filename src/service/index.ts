@@ -232,3 +232,21 @@ export const getSystemPromptListByCategoryService = (categoryId:string,keyword:s
 }
 
 
+/**
+ * @description: 添加收藏提示词
+ * @date: 2025-10-18 10:46
+ * @author wuwenqiang
+ */
+export const insertCollectPromptService = (promptId:string):Promise<MyAwesomeData<number>> => {
+    console.log(333,`${api.insertCollectPrompt}${promptId}`)
+    return httpRequest.post<number>(`${api.insertCollectPrompt}${promptId}`);
+}
+
+/**
+ * @description: 插入提示词
+ * @date: 2025-10-18 10:46
+ * @author wuwenqiang
+ */
+export const deleteCollectPromptService = (promptId:string):Promise<MyAwesomeData<number>> => {
+    return httpRequest.delete<number>(`${api.deleteCollectPrompt}${promptId}`);
+}

@@ -38,7 +38,8 @@ export type ChatType = {
   position:PositionEnum,
   thinkContent?:string,
   responseContent?:string,
-  start?:boolean
+  start?:boolean,
+  type?:string;
 }
 // 聊天气泡
 export type ChatHistoryType = {
@@ -85,7 +86,8 @@ export interface PayloadInterface {
   chatId:string; // 替换为实际聊天ID
   tenantId:string;
   type: string;
-  prompt: string;
+  prompt: string;// 用户提示词
+  systemPrompt:string;// 系统提示词
   showThink:boolean;
   directoryId?:string;
   language:string;
@@ -155,6 +157,7 @@ export interface AppStoreStateType {
   token: string;
   platform: string;
   device: string;
+  prompt:string;
   version: string;
   tenantUser: TenantUserType;
 }
@@ -177,7 +180,7 @@ export interface SystemPromptType {
   id: string;
   prompt: string;
   category:string;
-  isLike?:number;
+  isCollect?:number;
   disabled:number;
   createTime: string
   updateTime: string;
