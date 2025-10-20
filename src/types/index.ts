@@ -49,6 +49,7 @@ export type ChatHistoryType = {
   files?: string;       // 文件（
   chatId: string;      // 会话id
   prompt: string;      // 提示词
+  SystemPrompt: string;// 系统提示词
   content: string;     // 内容
   createTime: string;  // 创建时间
   thinkContent?:string,// 思考内容

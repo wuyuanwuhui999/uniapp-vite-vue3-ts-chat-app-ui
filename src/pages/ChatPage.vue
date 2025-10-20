@@ -488,7 +488,7 @@
 				chatList[chatList.length - 1].start = true;
 				// 匹配所有形式的 `<think>` 标签（包括属性和自闭合）
 				const regex = /<think>([\s\S]*?)<\/think>/gi
-				if(regex.test(chatList[chatList.length - 1].thinkContent || "")){
+				if(!showThink.value || regex.test(chatList[chatList.length - 1].thinkContent || "")){
 					chatList[chatList.length - 1].responseContent += data;
 				}else{
 					chatList[chatList.length - 1].thinkContent += data;
