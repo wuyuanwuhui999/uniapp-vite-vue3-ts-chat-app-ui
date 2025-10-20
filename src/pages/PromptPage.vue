@@ -4,19 +4,12 @@
             <image :src="icon_search" class="icon-small"></image>
         </NavigatorTitleComponent>
         <view class="page-body">
-            <view class="module-block category-wrapper">
+            <view class="module-block category-wrapper" v-if="promptCategoryList.length !== 0">
                 <text :class="activeIndex === index ? 'category-lable-active': ''" @click="onTabLable(index)" v-for="item,index in promptCategoryList" class="category-lable" :key="item.category">{{ item.category }}</text>
             </view>
-            <scroll-view class="scroll-view" scroll-y show-scrollbar="false" @scrolltolower="onLoadMoreUser">
+            <scroll-view  v-if="systemPromptTypeList.length !== 0" class="scroll-view" scroll-y show-scrollbar="false" @scrolltolower="onLoadMoreUser">
                 <view class="prompt-wrapper">
                     <view class="module-block prompt-list">
-                        <!-- <view class="prompt-item" v-for="item in systemPromptTypeList">
-                            <text class="prompt-text">{{ item.prompt }}</text>
-                            <view class="prompt-icon-wrapper">
-                                <image :src="icon_copy" class="icon-small" @click="onCopy"/>
-                                <image :src="item.isCollect ? icon_full_star : icon_empty_star" @click="onCollectPrompt(item)" class="icon-small"/>
-                            </view>
-                        </view> -->
                         <uniSwipeAction>
                             <template v-for="item,index in systemPromptTypeList" :key="'prompt-item'+index">
                                 <uniSwipeActionItem>

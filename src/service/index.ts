@@ -237,9 +237,8 @@ export const getSystemPromptListByCategoryService = (categoryId:string,keyword:s
  * @date: 2025-10-18 10:46
  * @author wuwenqiang
  */
-export const insertCollectPromptService = (promptId:string):Promise<MyAwesomeData<number>> => {
-    console.log(333,`${api.insertCollectPrompt}${promptId}`)
-    return httpRequest.post<number>(`${api.insertCollectPrompt}${promptId}`);
+export const insertCollectPromptService = (tenantId:string,promptId:string):Promise<MyAwesomeData<number>> => {
+    return httpRequest.post<number>(`${api.insertCollectPrompt}${tenantId}/${promptId}`);
 }
 
 /**
@@ -247,6 +246,24 @@ export const insertCollectPromptService = (promptId:string):Promise<MyAwesomeDat
  * @date: 2025-10-18 10:46
  * @author wuwenqiang
  */
-export const deleteCollectPromptService = (promptId:string):Promise<MyAwesomeData<number>> => {
-    return httpRequest.delete<number>(`${api.deleteCollectPrompt}${promptId}`);
+export const getMyCollectPromptCategoryService = (tenantId:string):Promise<MyAwesomeData<types.PromptCategoryType[]>> => {
+    return httpRequest.get<types.PromptCategoryType[]>(`${api.getMyCollectPromptCategory}?tenantId=${tenantId}`);
+}
+
+/**
+ * @description: 插入提示词
+ * @date: 2025-10-18 10:46
+ * @author wuwenqiang
+ */
+export const getMyCollectPromptListService = (tenantId:string,categoryId:string,pageNum:number,pageSize:number):Promise<MyAwesomeData<types.SystemPromptType[]>> => {
+    return httpRequest.get<types.SystemPromptType[]>(`${api.getMyCollectPromptList}?tenantId=${tenantId}&categoryId=${categoryId}&pageNum=${pageNum}&pageSize=${pageSize}`);
+}
+
+/**
+ * @description: 删除提示词
+ * @date: 2025-10-18 10:46
+ * @author wuwenqiang
+ */
+export const deleteCollectPromptService = (tenantId:string,categoryId:string,promptId:string):Promise<MyAwesomeData<types.SystemPromptType[]>> => {
+    return httpRequest.delete<types.SystemPromptType[]>(`${api.getMyCollectPromptList}?tenantId=${tenantId}&categoryId=${categoryId}&promptId=${promptId}`);
 }

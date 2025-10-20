@@ -18,6 +18,8 @@
 							<view class="menu-item" @click="onSwitchModel">切换模型</view>
 							<view class="menu-line"></view>
 							<view class="menu-item" @click="onSettingPrompt">设置提示词</view>
+							<view class="menu-line"></view>
+							<view class="menu-item" @click="onMyPrompt">我收藏的提示词</view>
 						</view>
 					</view>
 					<view class="menu-mask" @click="onHideMenu"></view>
@@ -881,10 +883,17 @@
 
 	const onSettingPrompt = ()=>{
 		uni.navigateTo({url: `../pages/PromptPage`})
+		showMenu.value = false;
 	}
 
 	const onEditPrompt = ()=>{
 		uni.navigateTo({url: `../pages/SettingPromptPage`})
+		showMenu.value = false;
+	}
+
+	const onMyPrompt = ()=>{
+		uni.navigateTo({url: `../pages/MyPromptPage`})
+		showMenu.value = false;
 	}
 
 	getStorageTenant()

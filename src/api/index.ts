@@ -32,6 +32,7 @@ export default {
   getPromptCategoryList: "/service/prompt/getPromptCategoryList",// 获取提示词类别
   getSystemPromptListByCategory: "/service/prompt/getSystemPromptListByCategory",// 获取系统提示词列表
   insertCollectPrompt: "/service/prompt/insertCollectPrompt/",// 插入收藏
-  deleteCollectPrompt: "/service/prompt/deleteCollectPrompt/"// 删除收藏
-
+  deleteCollectPrompt: "/service/prompt/deleteCollectPrompt/",// 删除收藏
+  getMyCollectPromptCategory: "/service/prompt/getMyCollectPromptCategory",// 获取我收藏的提示词分类
+  getMyCollectPromptList: "/service/prompt/getMyCollectPromptList"// 获取我收藏的提示词列表
 };
