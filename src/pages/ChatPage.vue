@@ -2,7 +2,7 @@
 	<view class="page-wrapper">
 		<view class="page-header">
 			<AvaterComponent size="small"/>
-			<text class="my-favorite">当前接入模型：{{ chatModelList[activeModelIndex]?.modelName }}</text>
+			<text class="my-favorite" @click="onSwitchModel">当前接入模型：{{ chatModelList[activeModelIndex]?.modelName }}</text>
 			<view class="menu-wrapper">
 				<image class="icon-small icon-record" @click="onShowMenu" :src="icon_menu"/>
 				<template v-if="showMenu">
@@ -262,7 +262,7 @@
 	const dialogText = ref<string>("");// 弹窗的内容
 	const chatList = reactive<Array<ChatType>>([
 		{
-			responseContent:"你好，我是智能音乐助手小吴同学，请问有什么可以帮助您？",
+			responseContent:"你好，我是智能助手小吴同学，请问有什么可以帮助您？",
 			position: PositionEnum.LEFT,
 			type:"system"
 		}
@@ -334,6 +334,7 @@
 				directoryId:directoryId.value,
 				language: LanguageMap[language.value],
 			};
+			console.log(payload)
 			await connectWebSocket();
 			socketTask?.send({
 				data: JSON.stringify(payload),
@@ -709,7 +710,6 @@
   }
 
 	const onUploadSure = ()=>{
-    debugger
 		uni.chooseFile({
 			count: 9,
 			type: 'file',
