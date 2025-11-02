@@ -34,5 +34,6 @@ export default {
   insertCollectPrompt: "/service/prompt/insertCollectPrompt/",// 插入收藏
   deleteCollectPrompt: "/service/prompt/deleteCollectPrompt/",// 删除收藏
   getMyCollectPromptCategory: "/service/prompt/getMyCollectPromptCategory",// 获取我收藏的提示词分类
-  getMyCollectPromptList: "/service/prompt/getMyCollectPromptList"// 获取我收藏的提示词列表
+  getMyCollectPromptList: "/service/prompt/getMyCollectPromptList",// 获取我收藏的提示词列表
+  getDocListByDirId: "/service/chat/getDocListByDirId"// 获取我收藏的提示词列表
 };

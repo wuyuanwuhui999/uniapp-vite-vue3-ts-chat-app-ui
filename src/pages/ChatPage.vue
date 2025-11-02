@@ -79,8 +79,10 @@
 		<scroll-view scroll-x class="scroll-container">
 			<view class="type-wrapper">
 				<text class="type-item" :class="{'type-item-active': showThink}" @click="onSwitchThink()">深度思考</text>
-				<text class="type-item" :class="{'type-item-active': type === 'document'}" @click="onCheckType('document')">查询文档</text>
-				<text class="type-item type-item-active" v-if="type === 'document'" @click="onSetDocument()">文档设置</text>
+				<view  class="type-item type-item-doc" :class="{'type-item-active': type === 'document'}">
+					<text @click="onCheckType('document')">查询文档</text>
+					<image class="icon-mini" @click="onSetDocument" :src="type == 'document' ? icon_setting_active : icon_setting_disabled"/>
+				</view>
 				<text class="type-item" :class="{'type-item-active': type === 'db'}" @click="onCheckType('db')">查询数据库</text>
 				<view class="type-item type-item-language" @click="onSwitchLang()"><text>{{ language }}</text><image class="icon-small" :src="icon_switch"/></view>
 			</view>
@@ -112,9 +114,9 @@
 			<template #content>
 				<scroll-view class="pop-scroll-view" scroll-y :show-scrollbar="false">
 					<uni-swipe-action>
-						<template v-for="items,aIndex in myDocList" :key="'docList'+aIndex">
-							<text class="directory-name">{{ items[0].directoryName }}</text>
-							<uni-swipe-action-item v-for="item,bIndex in items" :key="item.id">
+						<template v-for="aItem,aIndex in myDocList" :key="'docList'+aIndex">
+							<text class="directory-name">{{ aItem.directoryName }}</text>
+							<uni-swipe-action-item v-for="item,bIndex in aItem.docList" :key="item.id">
 								<view class="doc-item">
 									<text class="doc-name">{{ item.name }}</text>
 									<text class="doc-time"> {{ formatTimeAgo(item.createTime) }}</text>
@@ -141,7 +143,9 @@
 					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
 						<radio-group class="directory-list module-block" @change="onSelectDirectory">
 							<label class="directory-item" v-for="item in directoryList" :key="item.id">
-								<text class="directory-name">{{ item.directory }}</text>
+								<view class="directory-name-wrapper">
+									<text class="directory-name">{{ item.directory }}</text>
+								</view>
 								<radio :checked="directoryId === item.id" :value="item.id"></radio>
 							</label>
 						</radio-group>
@@ -170,17 +174,26 @@
 
 		<DialogComponent v-if="showCheckDocument" @onClose="showCheckDocument = false">
 			<template #header>
-				<text class="dialog-header">选择文件夹</text>
+				<text class="dialog-header">选择文件或文件夹</text>
 			</template>
 			<template #content>
 				<view class="directory-wrapper">
 					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-						<radio-group class="directory-list module-block" @change="onSelectDoc">
-							<label class="directory-item" v-for="item in directoryList" :key="item.id">
-								<text class="directory-name">{{ item.directory }}</text>
-								<radio :checked="mDirectoryId === item.id" :value="item.id"></radio>
-							</label>
-						</radio-group>
+						<view class="directory-list module-block">
+							<view class="directory-item" v-for="item in myDocList" :key="item.directoryName">
+								<view class="directory-info"  @click="onExpandDir(item)">
+									<text class="directory-name" @click="">{{ item.directoryName }}</text>
+									<image class="icon-mini" :class="item.expand ? 'icon-rotate': '' " :src="icon_arrow"></image>
+								</view>
+								<view class="doc-wrapper" v-if="item.expand && item.docList?.length">
+									<view class="doc-item" v-for="value in item.docList">
+										<text class="doc-name">{{ value.name }}</text>
+										<radio :checked="value.checked" @click="checkDoc(value)" :value="value.id"></radio>
+									</view>
+								</view>
+							</view>
+
+						</view>
 					</scroll-view>
 					<view class="dialog-btn-wrapper">
 						<text class="dialog-btn dialog-btn-sure" @click="onSureCheck">确定</text>
@@ -200,7 +213,10 @@
 	import icon_chat from '../../static/icon_chat.png';
 	import icon_switch from '../../static/icon_switch.png';
 	import icon_menu_add from '../../static/icon_menu_add.png';
-	import icon_edit from "../../static/icon_edit.png"
+	import icon_edit from "../../static/icon_edit.png";
+	import icon_setting_active from "../../static/icon_setting_active.png";
+	import icon_setting_disabled from "../../static/icon_setting_disabled.png";
+	import icon_arrow from "../../static/icon_arrow.png";
 	import AvaterComponent from '../components/AvaterComponent.vue';
     import type {
       OptionType,
@@ -215,7 +231,8 @@
       UploadFile,
       UploadResponse,
       DirectoryInterce,
-      TenantUserType
+      TenantUserType,
+	  DirectoryCheckInterface
     } from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
@@ -228,7 +245,7 @@
       deleteMyDocumentService,
       getDirectoryListService,
       createDirectoryService,
-      getTenantUserService
+      getTenantUserService,
     } from "../service";
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
@@ -256,7 +273,7 @@
 	const activeModelIndex = ref<number>(0);
 	const showMenu = ref<boolean>(false);
 	const showMyDoc = ref<boolean>(false);
-	const myDocList = reactive<DocumentInterface[][]>([]);
+	const myDocList = reactive<DirectoryCheckInterface[]>([]);
 	const showThink = ref<boolean>(false);// 是否深度思考
 	const thinking = ref<boolean>(false);
 	const dialogText = ref<string>("");// 弹窗的内容
@@ -328,10 +345,10 @@
 				chatId, // 替换为实际聊天ID
 				type:type.value,
 				systemPrompt:store.prompt,
+				docIds:getCheckedDocIds(),
 				prompt: inputValue.value.trim(),
 				showThink:showThink.value,
         		tenantId:store.tenantUser?.tenantId!,
-				directoryId:directoryId.value,
 				language: LanguageMap[language.value],
 			};
 			console.log(payload)
@@ -546,23 +563,33 @@
 	 */
 	const onShowMyDoc = () => {
 		uni.showLoading();
-		getMyDocumentService(store.tenantUser?.tenantId??"personal").then((res)=>{
+		getMyDocumentList().then((res)=>{
 			showMyDoc.value = true;
 			showMenu.value = false;
 			myDocList.length = 0;
-			res.data.forEach((aItem)=>{
-				let bItems = myDocList.find((items)=>{
-					return items[0].directoryName === aItem.directoryName;
-				});
-				if(!bItems){
-					bItems = [];
-					myDocList.push(bItems);
-				}
-				bItems.push(aItem);
-			});
-			
+			myDocList.push(...res);
 		}).finally(()=>{
 			uni.hideLoading();
+		});
+	}
+
+	const getMyDocumentList = ():Promise<DirectoryCheckInterface[]> => {
+		return getMyDocumentService(store.tenantUser?.tenantId??"personal").then((res)=>{
+			const myDocList:DirectoryCheckInterface[] = []
+			res.data.forEach((aItem)=>{
+				let bItems = myDocList.find((item)=>{
+					return item.directoryName === aItem.directoryName;
+				});
+				if(!bItems){
+					bItems = {
+						directoryName:aItem.directoryName,
+						docList:[] as DocumentInterface[]
+					};
+					myDocList.push(bItems);
+				}
+				bItems.docList.push(aItem);
+			});
+			return myDocList;
 		})
 	}
 
@@ -817,10 +844,16 @@
 	 * @author wuwenqiang
 	 */
 	const onSetDocument = ()=>{
-		showCheckDocument.value = true;
-    getDirectoryListService(store.tenantUser?.tenantId??"").then((res)=>{
-      directoryList.splice(1,directoryList.length,...res.data);
-    });
+		if(type.value !== 'document'){
+			type.value = 'document';
+		}else{
+			showCheckDocument.value = true;
+			getMyDocumentList().then((res)=>{
+				myDocList.length = 0;
+				myDocList.push(...res);
+			})
+		}
+	
 	}
 
 	/**	
@@ -896,6 +929,32 @@
 		showMenu.value = false;
 	}
 
+	 /**
+     * @author: wuwenqiang
+     * @description: 选中或取消选中文档
+     * @date: 2025-11-02 14:37
+     */
+	const checkDoc = (docItem:DocumentInterface) => {
+		docItem.checked = !docItem.checked;
+	}
+
+	const getCheckedDocIds = ():string[]=>{
+		if(type.value == 'document'){
+			const ids:string[] = [];
+			myDocList.forEach((aItem)=>{
+				aItem.docList?.forEach((bItem)=>{
+					if(bItem.checked)ids.push(bItem.id);
+				})
+			});
+			return ids;
+		}
+		return [];
+	}
+
+	const onExpandDir = (item:DirectoryCheckInterface)=>{
+		item.expand = !item.expand;
+	}
+	
 	getStorageTenant()
 </script>
 
@@ -1055,6 +1114,9 @@
 					white-space: nowrap;
 					flex-shrink: 0;
 					gap:@small-margin;
+					&.type-item-doc{
+						display: flex;
+					}
 					&.type-item-language{
 						color: #000;
 					}
@@ -1107,7 +1169,7 @@
 			display: flex;
 			flex-direction: column;
 			gap:@page-padding;
-      background: @page-background-color;
+      		background: @page-background-color;
 			.create-directory{
 				display: flex;
 				justify-content: space-between;
@@ -1117,27 +1179,52 @@
 			.directory-scroll{
 				flex: 1;
 				height: 0;
-        margin-bottom: @page-padding;
+        		margin-bottom: @page-padding;
 				.directory-list{
-          margin: @page-padding;
+          			margin: @page-padding;
 					.directory-item{
 						display: flex;
+						flex-direction: column;
 						align-items: center;
 						padding: @page-padding;
-            border-bottom: 1rpx solid @disable-text-color;
-            &:first-child{
-              padding-top: 0;
-            }
-            &:last-child{
-              border-bottom: none;
-              padding-bottom: 0;
-            }
+            			border-bottom: 1rpx solid @disable-text-color;
+						&:first-child{
+							padding-top: 0;
+						}
+						&:last-child{
+							border-bottom: none;
+							padding-bottom: 0;
+						}
+						.directory-info{
+							display: flex;
+							width: 100%;
+						}
 						.directory-name{
-							flex: 1;
-							width: 0;
 							text-overflow: ellipsis;
 							white-space: nowrap;
 							overflow: hidden;
+						}
+						.icon-mini{
+							opacity: 0.5;
+							&.icon-rotate{
+								transform: rotate(90deg);
+							}
+						}
+						.check-part{
+							opacity: 0.5;
+						}
+						.doc-wrapper{
+							display: flex;
+							flex-direction: column;
+							width: 100%;
+							gap: @page-padding;
+							margin-top: @page-padding;
+							.doc-item{
+								display: flex;
+								.doc-name{
+									flex: 1;
+								}
+							}
 						}
 					}
 				}	

@@ -267,3 +267,12 @@ export const getMyCollectPromptListService = (tenantId:string,categoryId:string,
 export const deleteCollectPromptService = (tenantId:string,categoryId:string,promptId:string):Promise<MyAwesomeData<types.SystemPromptType[]>> => {
     return httpRequest.delete<types.SystemPromptType[]>(`${api.getMyCollectPromptList}?tenantId=${tenantId}&categoryId=${categoryId}&promptId=${promptId}`);
 }
+
+/**
+ * @description: 根据目录id获取文档
+ * @date: 2025-11-02 11:37
+ * @author wuwenqiang
+ */
+export const getDocListByDirIdService = (tenantId:string,directoryId:string):Promise<MyAwesomeData<types.DocumentInterface[]>> => {
+    return httpRequest.get<types.DocumentInterface[]>(`${api.getDocListByDirId}?tenantId=${tenantId}&directoryId=${directoryId}`);
+}

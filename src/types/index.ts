@@ -87,6 +87,7 @@ export interface PayloadInterface {
   chatId:string; // 替换为实际聊天ID
   tenantId:string;
   type: string;
+  docIds?:string[];// 文档列表
   prompt: string;// 用户提示词
   systemPrompt:string;// 系统提示词
   showThink:boolean;
@@ -103,6 +104,7 @@ export interface DocumentInterface {
   updateTime: string// 更新时间
   directoryId:string// 目录id
   directoryName:string;// 目录名称
+  checked?:boolean;// 是否选中
 };
 
 export interface OptionType {
@@ -118,6 +120,12 @@ export interface DirectoryInterce {
   tenantId: string;// 租户id
   createTime?:string;// 创建时间
   updateTime?:string;// 更新时间
+}
+
+export interface DirectoryCheckInterface{
+  directoryName:string;
+  expand?:boolean;
+  docList:DocumentInterface[]
 }
 
 // 租户

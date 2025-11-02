@@ -4,7 +4,7 @@
         <view class="dialog-body-wrapper">
             <view class="dialog-header">
                 <slot name="header"/>
-                <image class="icon-close icon-small" @click="onClose" :src="icon_close"/>
+                <image class="icon-close icon-mini" @click="onClose" :src="icon_close"/>
             </view>
             <slot name="content"></slot>
         </view>
