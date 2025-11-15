@@ -45,7 +45,7 @@
 										
 											<!-- 正式回答黑色区块 -->
 											<view class="response-box">
-												<text>{{ item.responseContent }}</text>
+												<text v-html="marked.parse(item.responseContent)"></text>
 											</view>
 									</view>
 								</view>		
@@ -174,7 +174,7 @@
 
 		<DialogComponent v-if="showCheckDocument" @onClose="showCheckDocument = false">
 			<template #header>
-				<text class="dialog-header">选择文件或文件夹</text>
+				<text class="dialog-header">选择文档</text>
 			</template>
 			<template #content>
 				<view class="directory-wrapper">
@@ -206,6 +206,9 @@
 </template>
 
 <script setup lang="ts">
+	import { marked } from 'marked'
+	import 'highlight.js/styles/github.css';
+	import "highlight.js/styles/paraiso-light.css";
     import { reactive, ref, onBeforeUnmount,defineAsyncComponent } from 'vue';
 	import icon_send from '../../static/icon_send.png';
 	import icon_menu from '../../static/icon_menu.png';
@@ -298,15 +301,16 @@
 	const directoryList = reactive<DirectoryInterce[]>([{
 		directory:"默认文件夹",
 		id:"public",
-    tenantId:store.tenantUser?.id??"",
+    	tenantId:store.tenantUser?.id??"",
 	}]);
+
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
       'txt': 'text/plain',
       'pdf': 'application/pdf'
     }
+
 	// 支持的扩展名
-	
     const supportedExtensions = Object.keys(supportedMimeTypes) as FileType[]
     /**
 	 * @author: wuwenqiang
@@ -1198,6 +1202,8 @@
 						.directory-info{
 							display: flex;
 							width: 100%;
+							align-items: center;
+							gap:@small-margin
 						}
 						.directory-name{
 							text-overflow: ellipsis;
@@ -1233,14 +1239,14 @@
 				display: flex;
 				gap:@page-padding;
 				padding: @page-padding;
-        background: @module-background-color;
+        		background: @module-background-color;
 				.dialog-btn{
 					flex: 1;
-					height: @btn-height;
+					height: @input-height;
 					display: flex;
 					justify-content: center;
 					align-items: center;
-					border-radius: @btn-height;
+					border-radius: @input-height;
 					&.dialog-btn-sure{
 						color: @module-background-color;
 						background-color: @line-color ;
