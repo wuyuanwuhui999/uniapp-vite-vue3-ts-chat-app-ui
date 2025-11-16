@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
     import icon_close from "../../static/icon_close.png"
-    import { defineEmits} from 'vue';
     const emits = defineEmits(['onClose']);
 
     /**

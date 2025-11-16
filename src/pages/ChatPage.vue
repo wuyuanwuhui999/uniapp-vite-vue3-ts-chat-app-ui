@@ -44,9 +44,10 @@
 											</view>
 										
 											<!-- 正式回答黑色区块 -->
-											<view class="response-box">
-												<text v-html="marked.parse(item.responseContent)"></text>
-											</view>
+											 <view class="response-box">
+												<mp-html :content="marked.parse(item.responseContent)"></mp-html>
+											 </view>
+
 									</view>
 								</view>		
 								<image v-if="item.type === 'system'" @click="onEditPrompt" :src="icon_edit" class="icon-small"/>
@@ -80,7 +81,7 @@
 			<view class="type-wrapper">
 				<text class="type-item" :class="{'type-item-active': showThink}" @click="onSwitchThink()">深度思考</text>
 				<view  class="type-item type-item-doc" :class="{'type-item-active': type === 'document'}">
-					<text @click="onCheckType('document')">查询文档</text>
+					<text @click="onCheckType('document')">知识库</text>
 					<image class="icon-mini" @click="onSetDocument" :src="type == 'document' ? icon_setting_active : icon_setting_disabled"/>
 				</view>
 				<text class="type-item" :class="{'type-item-active': type === 'db'}" @click="onCheckType('db')">查询数据库</text>
@@ -174,7 +175,7 @@
 
 		<DialogComponent v-if="showCheckDocument" @onClose="showCheckDocument = false">
 			<template #header>
-				<text class="dialog-header">选择文档</text>
+				<text class="dialog-header">知识库</text>
 			</template>
 			<template #content>
 				<view class="directory-wrapper">
@@ -206,7 +207,8 @@
 </template>
 
 <script setup lang="ts">
-	import { marked } from 'marked'
+	import { marked } from 'marked';
+	import mpHtml from "mp-html/dist/uni-app/components/mp-html/mp-html";
 	import 'highlight.js/styles/github.css';
 	import "highlight.js/styles/paraiso-light.css";
     import { reactive, ref, onBeforeUnmount,defineAsyncComponent } from 'vue';
@@ -280,6 +282,7 @@
 	const showThink = ref<boolean>(false);// 是否深度思考
 	const thinking = ref<boolean>(false);
 	const dialogText = ref<string>("");// 弹窗的内容
+	const checkedDocIds = reactive<string[]>([]);
 	const chatList = reactive<Array<ChatType>>([
 		{
 			responseContent:"你好，我是智能助手小吴同学，请问有什么可以帮助您？",
@@ -349,7 +352,7 @@
 				chatId, // 替换为实际聊天ID
 				type:type.value,
 				systemPrompt:store.prompt,
-				docIds:getCheckedDocIds(),
+				docIds:type.value == 'document' ? checkedDocIds : [],
 				prompt: inputValue.value.trim(),
 				showThink:showThink.value,
         		tenantId:store.tenantUser?.tenantId!,
@@ -591,6 +594,7 @@
 					};
 					myDocList.push(bItems);
 				}
+				aItem.checked = checkedDocIds.includes(aItem.id);
 				bItems.docList.push(aItem);
 			});
 			return myDocList;
@@ -867,7 +871,7 @@
 	 */
 	const onSureCheck = ()=>{
 		showCheckDocument.value = false;
-		directoryId.value = mDirectoryId.value;
+		getCheckedDocIds();
 	}
 
 	/**
@@ -942,17 +946,13 @@
 		docItem.checked = !docItem.checked;
 	}
 
-	const getCheckedDocIds = ():string[]=>{
-		if(type.value == 'document'){
-			const ids:string[] = [];
-			myDocList.forEach((aItem)=>{
-				aItem.docList?.forEach((bItem)=>{
-					if(bItem.checked)ids.push(bItem.id);
-				})
-			});
-			return ids;
-		}
-		return [];
+	const getCheckedDocIds = ()=>{
+		checkedDocIds.length = 0;
+		myDocList.forEach((aItem)=>{
+			aItem.docList?.forEach((bItem)=>{
+				if(bItem.checked)checkedDocIds.push(bItem.id);
+			})
+		});		
 	}
 
 	const onExpandDir = (item:DirectoryCheckInterface)=>{

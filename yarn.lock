@@ -4601,20 +4601,20 @@
   dependencies:
     "tmpl" "1.0.5"
 
-"marked-highlight@^2.2.3":
-  "integrity" "sha512-FCfZRxW/msZAiasCML4isYpxyQWKEEx44vOgdn5Kloae+Qc3q4XR7WjpKKf8oMLk7JP9ZCRd2vhtclJFdwxlWQ=="
-  "resolved" "https://registry.npmjs.org/marked-highlight/-/marked-highlight-2.2.3.tgz"
-  "version" "2.2.3"
-
-"marked@^4.3.0", "marked@>=4 <18":
-  "integrity" "sha512-PRsaiG84bK+AMvxziE/lCFss8juXjNaWzVbN5tXAm4XjeaS9NAHhop+PjQxz2A9h8Q4M/xGmzP8vqNwy6JeK0A=="
-  "resolved" "https://registry.npmjs.org/marked/-/marked-4.3.0.tgz"
-  "version" "4.3.0"
+"marked@^14.1.4":
+  "integrity" "sha512-vkVZ8ONmUdPnjCKc5uTRvmkRbx4EAi2OkTOXmfTDhZz3OFqMNBM1oTTWwTr4HY4uAEojhzPf+Fy8F1DWa3Sndg=="
+  "resolved" "https://registry.npmjs.org/marked/-/marked-14.1.4.tgz"
+  "version" "14.1.4"
 
 "math-intrinsics@^1.1.0":
   "integrity" "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g=="
   "resolved" "https://registry.npmmirror.com/math-intrinsics/-/math-intrinsics-1.1.0.tgz"
   "version" "1.1.0"
+
+"md-html@^1.0.11":
+  "integrity" "sha512-pixGQio00oGV/xLNIxWeIpciL3gG8DX25j1lXZaf73BhzrWm8mfFCe3QiHshjsO3550uNzHZvsO8j/n1W0bGYw=="
+  "resolved" "https://registry.npmjs.org/md-html/-/md-html-1.0.11.tgz"
+  "version" "1.0.11"
 
 "md5@^2.3.0":
   "integrity" "sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g=="

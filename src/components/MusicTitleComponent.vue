@@ -9,7 +9,6 @@
 </template>
 
 <script setup lang="ts">
-	import { defineProps, defineEmits } from 'vue';
 	import icon_down from "../../static/icon_down.png";
 	const props = defineProps({
 		classifyItem: {

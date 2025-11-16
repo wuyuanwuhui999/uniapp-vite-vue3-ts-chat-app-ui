@@ -15,7 +15,7 @@
     </uni-popup>
 </template>
 <script lang="ts" setup>
-    import {type PropType,defineEmits,ref} from "vue";
+    import {type PropType,ref} from "vue";
     import uniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup.vue';
     
     const popup = ref<null | InstanceType<typeof uniPopup>>(null);
