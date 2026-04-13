@@ -8,11 +8,11 @@
 	background-color: @page-background-color;
 }
 .module-block{
-    background-color: @module-background-color;
+    background-color: @white-color;
     border-radius: @module-border-radius;
-    padding: @page-padding;
-    font-size: @font-size-normal;
-    margin-top: @page-padding;
+    padding: @middle-padding;
+    font-size: @normal-font-size;
+    margin-top: @middle-padding;
     box-sizing: border-box;
 	&.module-block-row{
 		display: flex;
@@ -22,19 +22,10 @@
 		flex-direction: column;
 	}
 	&.module-block-last{
-		margin-bottom: @page-padding;
+		margin-bottom: @middle-padding;
 	}
 }
-.music-cover{
-	display: flex;
-	width: @middle-avater;
-	height: @middle-avater;
-	border-radius: 50%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background-color: @page-background-color;
-}
+
 .icon-mini{
 	width: @mini-icon-size;
 	height: @mini-icon-size;
@@ -52,7 +43,7 @@
 	height: @big-icon-size;
 }
 .small-margin{
-	margin-left: @small-margin;
+	margin-left: @small-padding;
 }
 .no-data {
 	display: flex;
@@ -60,5 +51,5 @@
 	height: @big-avater;
 	justify-content: center;
 	align-items: center;
-	color: @disable-text-color;
+	color: @gray-color;
 }

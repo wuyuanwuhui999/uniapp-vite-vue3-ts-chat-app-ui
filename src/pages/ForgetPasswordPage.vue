@@ -74,7 +74,7 @@
 		background-color: @page-background-color;
 		.page-body{
 			flex: 1;
-			padding: 0 @page-padding @page-padding;
+			padding: 0 @middle-padding @middle-padding;
 			.module-block{
 				align-items: center;
 				.row{
@@ -89,7 +89,7 @@
 					}
 					.input{
 						flex: 1;
-						padding-left: @small-margin;
+						padding-left: @small-padding;
 						height: @input-height
 					}
 					/deep/.icon-calendar{
@@ -100,12 +100,12 @@
 			.login-btn{
 				text-align: center;
 				width: 100%;
-				padding: @page-padding;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
-				margin-top:  @page-padding;
+				margin-top:  @middle-padding;
 				background-color: @warn-color;
-				color: @module-background-color;
+				color: @white-color;
 				display: inline-block;
 			}
 		}

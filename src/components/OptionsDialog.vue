@@ -58,19 +58,19 @@
 			&.sex-dialog-wrapper{
 				flex-direction: column;
 				justify-content: flex-end;
-				padding: @page-padding;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				.option-wrapper{
 					display: flex;
 					flex-direction: column;
-					background-color: @module-background-color;
+					background-color: @white-color;
 					width: 100%;
 					border-radius: @module-border-radius;
 					.option-item{
 						display: block;
 						width: 100%;
 						text-align: center;
-						padding: @page-padding 0;
+						padding: @middle-padding 0;
 						border-bottom: 1rpx solid @page-background-color;
 						&:last-child{
 							border-bottom:none;
@@ -78,11 +78,11 @@
 					}
 				}
 				.option-btn{
-					margin-top: @page-padding;
+					margin-top: @middle-padding;
 					width: 100%;
 					text-align: center;
-					padding: @page-padding 0;
-					background-color: @module-background-color;
+					padding: @middle-padding 0;
+					background-color: @white-color;
 					border-radius: @module-border-radius;
 				}
 			}
@@ -91,9 +91,9 @@
 				left: 50%;
 				top: 50%;		
 				border-radius: @module-border-radius;
-				background-color: @white-background-color;
+				background-color: @white-color;
 				.dialog-header{
-					padding: @page-padding;
+					padding: @middle-padding;
 					display: flex;
 					align-items: center;
 					justify-content: center;
@@ -101,16 +101,16 @@
 					border-bottom: 1rpx solid @page-background-color;
 				}
 				.dialog-content{
-					padding: @page-padding;
+					padding: @middle-padding;
 					display: flex;
 					align-items: center;
 					.field-text{
-						margin-right: @page-padding;
+						margin-right: @middle-padding;
 					}
 					.text-input{
 						flex: 1;
 						background-color: @page-background-color;
-						padding: @page-padding;
+						padding: @middle-padding;
 						color: @sub-title-color;
 						border-radius: @module-border-radius;
 					}
@@ -120,15 +120,15 @@
 					border-top: 1rpx solid @page-background-color;
 					.btn-cancle{
 						flex: 1;
-						padding: @page-padding;
+						padding: @middle-padding;
 						text-align: center;
 						color: @sub-title-color;
 					}
 					.btn-sure{
 						flex: 1;
-						padding: @page-padding;
+						padding: @middle-padding;
 						text-align: center;
-						color: @line-color;
+						color: @gray-color;
 						font-weight: bold;
 						border-left: 1rpx solid @page-background-color;;
 					}

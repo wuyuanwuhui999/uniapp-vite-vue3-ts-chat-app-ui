@@ -61,9 +61,9 @@
                 left: 50%;
                 top: 50%;
                 border-radius: @module-border-radius;
-                background-color: @white-background-color;
+                background-color: @white-color;
                 .dialog-header{
-                    padding: @page-padding;
+                    padding: @middle-padding;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -71,7 +71,7 @@
                     box-sizing: border-box;
                 }
                 .dialog-content{
-                    padding: calc(@page-padding * 2);
+                    padding: calc(@middle-padding * 2);
                     display: flex;
                     box-sizing: border-box;
                     justify-content: center;
@@ -89,7 +89,7 @@
                     }
                     .btn-sure{
                         flex: 1;
-                        color: @line-color;
+                        color: @gray-color;
                         height: @btn-height;
                         display: flex;
                         justify-content: center;

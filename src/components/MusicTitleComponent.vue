@@ -63,12 +63,12 @@
 		}
 
 		.classify-name {
-			padding-left: @page-padding;
+			padding-left: @middle-padding;
 			flex: 1;
 		}
 		
 		.classify-more{
-			color: @disable-text-color;
+			color: @gray-color;
 			text-decoration: underline;
 		}
 	}

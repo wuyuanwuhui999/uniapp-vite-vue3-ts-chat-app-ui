@@ -264,13 +264,13 @@ getTenantList();
 	@import '../theme/size.less';
 	@import '../theme/style.less';
   .module-block{
-    margin: @page-padding;
-    gap:@page-padding;
+    margin: @middle-padding;
+    gap:@middle-padding;
     .user-info{
       display: flex;
       align-items: center;
-      gap: @page-padding;
-      padding:@page-padding;
+      gap: @middle-padding;
+      padding:@middle-padding;
       &.user-info-first-child{
         padding-top: 0;
       }
@@ -280,13 +280,13 @@ getTenantList();
         border-bottom:none;
       }
       .user-account{
-        color: @disable-text-color;
+        color: @gray-color;
         flex: 1;
       }
     }
     .line{
       height: 1rpx;
-      background: @disable-text-color;
+      background: @gray-color;
     }
     .user-avater{
       border-radius: 50%;
@@ -304,17 +304,17 @@ getTenantList();
         justify-content: center;
         align-items: center;
 
-        margin-left: @page-padding;
+        margin-left: @middle-padding;
         &.delete-button{
           background-color: @warn-color;
-          color: @module-background-color;
+          color: @white-color;
         }
         &.set-admin-button{
-          background-color: @line-color;
-          color: @module-background-color;
+          background-color: @gray-color;
+          color: @white-color;
         }
         .button-text{
-          padding: 0 calc(@page-padding * 2);
+          padding: 0 calc(@middle-padding * 2);
         }
       }
     }
@@ -322,7 +322,7 @@ getTenantList();
   }
   .load-data{
     text-align: center;
-    color: @disable-text-color;
+    color: @gray-color;
     display: inline-block;
     width: 100%;
   }
@@ -336,16 +336,16 @@ getTenantList();
     flex-direction: column;
     .search-wrapper{
       display: flex;
-      gap: @page-padding;
+      gap: @middle-padding;
       height:@small-avater;
       align-items: center;
       background-color: @page-background-color;
       border-radius: @middle-avater;
-      padding: 0 @small-margin;
+      padding: 0 @small-padding;
       .search-input{
         height: 100%;
         flex: 1;
-        padding-left: @small-margin;
+        padding-left: @small-padding;
       }
       .icon-small{
         filter: grayscale(100%);
@@ -355,7 +355,7 @@ getTenantList();
       flex: 1;
       height: 0;
       .user-list{
-        gap:@page-padding;
+        gap:@middle-padding;
         margin-top: 0;
       }
     }

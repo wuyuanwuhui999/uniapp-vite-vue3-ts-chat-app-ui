@@ -152,7 +152,7 @@
 	@import '../theme/style.less';
     .page-wrapper{
 		.page-body{
-			margin: 0 @page-padding;
+			margin: 0 @middle-padding;
             flex: 1;
             display: flex;
             height: 0;
@@ -160,32 +160,32 @@
             .category-wrapper{
                 display: grid;
                 grid-template-columns: repeat(5,1fr);
-                gap:@page-padding;
+                gap:@middle-padding;
                 .category-lable{
                     border-radius: @module-border-radius;
-                    padding:@page-padding 0;
+                    padding:@middle-padding 0;
                     display: flex;
                     justify-content: center;
-                    border: 1rpx solid @disable-text-color;
+                    border: 1rpx solid @gray-color;
                     &.category-lable-active{
-                        border-color:@tab-color-active;
-                        color: @tab-color-active;
+                        border-color:@primary-color;
+                        color: @primary-color;
                     }
                 }
             }
             .scroll-view{
                 flex: 1;
                 height: 0;
-                padding-top: @page-padding;
+                padding-top: @middle-padding;
                 box-sizing: border-box;
                 .prompt-wrapper{
-                    padding-bottom: @page-padding;
+                    padding-bottom: @middle-padding;
                     box-sizing: border-box;
                     .prompt-list{
                         margin-top: 0;
                         .prompt-item{
-                            padding-top: @page-padding;
-                            padding-bottom: @page-padding;
+                            padding-top: @middle-padding;
+                            padding-bottom: @middle-padding;
                             display: flex;
                             &.prompt-item-first{
                                 padding-top: 0;
@@ -205,14 +205,14 @@
                             }
                             .prompt-icon-wrapper{
                                 display: flex;
-                                gap: @page-padding;
-                                margin-left: @page-padding;
+                                gap: @middle-padding;
+                                margin-left: @middle-padding;
                                 align-items: center;
                             }
                         }
                         .line{
                             height: 1rpx;
-                            background: @disable-text-color;
+                            background: @gray-color;
                         }
                         .button-wrapper{
                             display: flex;
@@ -223,17 +223,17 @@
                                 justify-content: center;
                                 align-items: center;
 
-                                margin-left: @page-padding;
+                                margin-left: @middle-padding;
                                 &.delete-button{
                                 background-color: @warn-color;
-                                color: @module-background-color;
+                                color: @white-color;
                                 }
                                 &.set-admin-button{
-                                background-color: @line-color;
-                                color: @module-background-color;
+                                background-color: @gray-color;
+                                color: @white-color;
                                 }
                                 .button-text{
-                                padding: 0 calc(@page-padding * 2);
+                                padding: 0 calc(@middle-padding * 2);
                                 }
                             }
                             }

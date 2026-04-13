@@ -23,13 +23,13 @@
 	    display: flex;
 	    align-items: center;
 	    .title-line{
-	        margin-right: @small-margin;
+	        margin-right: @small-padding;
 	        height: @line-height;
 	        width: @line-width;
-	        background-color: @line-color;
+	        background-color: @gray-color;
 	    }
 	    .title-line{
-	        font-size: @font-size-normal;
+	        font-size: @normal-font-size;
 	    }
 	}
 </style>

@@ -93,14 +93,14 @@
 	.page-wrapper{
 		.module-block{
 			align-items: center;
-			margin: @page-padding @page-padding 0;
-			gap:@page-padding;
+			margin: @middle-padding @middle-padding 0;
+			gap:@middle-padding;
 			.login-input-wrapper{
 				display: flex;
 				align-items: center;
 				width: 100%;
-				border: 1rpx solid @disable-text-color;
-				padding: @page-padding;
+				border: 1rpx solid @gray-color;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
 				.icon-login{
@@ -109,30 +109,30 @@
 				}
 				.login-input{
 					flex: 1;
-					margin-left: @page-padding;
+					margin-left: @middle-padding;
 				}
 			}
 
 			.register-btn{
 				text-align: center;
 				width: 100%;
-				border: 1rpx solid @disable-text-color;
-				padding: @page-padding;
+				border: 1rpx solid @gray-color;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
-				margin-top:  @page-padding;
+				margin-top:  @middle-padding;
 				display: inline-block;
 				background-color: transparent;
 			}
 		}
 		.login-btn{
 			text-align: center;
-			margin: @page-padding;
-			padding: @page-padding;
+			margin: @middle-padding;
+			padding: @middle-padding;
 			box-sizing: border-box;
 			border-radius: @big-border-radius;
 			background-color: @warn-color;
-			color: @module-background-color;
+			color: @white-color;
 			display: inline-block;
 		}
 	}

@@ -238,19 +238,19 @@
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
-		padding: 0 @page-padding @page-padding;
+		padding: 0 @middle-padding @middle-padding;
 		background-color: @page-background-color;
 		.tab-container{
 				display: flex;
-				gap: @page-padding;
+				gap: @middle-padding;
 				width: 100%;
 				.tab-item{
-					padding-bottom: @small-margin;
+					padding-bottom: @small-padding;
 					flex: 1;
 					text-align: center;
 					.tab-text-active{
-						color: @selected-color;
-						border-bottom: @border-size solid @selected-color;
+						color: @primary-color;
+						border-bottom: @border-size solid @primary-color;
 					}
 				}
 			}
@@ -263,47 +263,47 @@
 				margin: @middle-icon-size 0;
 			}
 			.login-input-wrapper{
-				margin-top: @page-padding;
+				margin-top: @middle-padding;
 				display: flex;
 				align-items: center;
 				width: 100%;
-				border: 1rpx solid @disable-text-color;
-				padding: @page-padding;
+				border: 1rpx solid @gray-color;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
 				.icon-login{
 					width: @small-icon-size;
 					height: @middle-icon-size;
 					&.icon-send{
-						margin-right: @page-padding;
+						margin-right: @middle-padding;
 					}
 				}
 				.login-input{
 					flex: 1;
-					margin-left: @page-padding;
+					margin-left: @middle-padding;
 				}
 			}
 
 			.login-btn{
 				text-align: center;
 				width: 100%;
-				padding: @page-padding;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
-				margin-top:  @page-padding;
+				margin-top:  @middle-padding;
 				background-color: @warn-color;
-				color: @module-background-color;
+				color: @white-color;
 				display: inline-block;
 			}
 
 			.register-btn{
 				text-align: center;
 				width: 100%;
-				border: 1rpx solid @disable-text-color;
-				padding: @page-padding;
+				border: 1rpx solid @gray-color;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
-				margin-top:  @page-padding;
+				margin-top:  @middle-padding;
 				display: inline-block;
 				background-color: transparent;
 			}

@@ -105,17 +105,17 @@
 	@import '../theme/style.less';
 	.page-wrapper{
 		.page-body{
-			padding: 0 @page-padding;
+			padding: 0 @middle-padding;
 		}
 		.module-block{
 			align-items: center;
 			.login-input-wrapper{
-				margin-top: @page-padding;
+				margin-top: @middle-padding;
 				display: flex;
 				align-items: center;
 				width: 100%;
-				border: 1rpx solid @disable-text-color;
-				padding: @page-padding;
+				border: 1rpx solid @gray-color;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
 				.icon-login{
@@ -124,30 +124,30 @@
 				}
 				.login-input{
 					flex: 1;
-					margin-left: @page-padding;
+					margin-left: @middle-padding;
 				}
 			}
 		}
 		.login-btn{
 			text-align: center;
 			width: 100%;
-			padding: @page-padding;
+			padding: @middle-padding;
 			box-sizing: border-box;
 			border-radius: @big-border-radius;
-			margin-top:  @page-padding;
+			margin-top:  @middle-padding;
 			background-color: @warn-color;
-			color: @module-background-color;
+			color: @white-color;
 			display: inline-block;
 		}
 
 		.register-btn{
 			text-align: center;
 			width: 100%;
-			border: 1rpx solid @disable-text-color;
-			padding: @page-padding;
+			border: 1rpx solid @gray-color;
+			padding: @middle-padding;
 			box-sizing: border-box;
 			border-radius: @big-border-radius;
-			margin-top:  @page-padding;
+			margin-top:  @middle-padding;
 			display: inline-block;
 			background-color: transparent;
 		}

@@ -30,7 +30,7 @@
 	@import '../theme/style.less';
     .page-wrapper{
         .page-body{
-            margin: 0 @page-padding;
+            margin: 0 @middle-padding;
             flex: 1;
             display: flex;
             height: 0;
@@ -46,12 +46,12 @@
             .save-btn{
                 text-align: center;
 				width: 100%;
-				padding: @page-padding;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
-				margin:  @page-padding 0;
+				margin:  @middle-padding 0;
 				background-color: @warn-color;
-				color: @module-background-color;
+				color: @white-color;
 				display: inline-block;
             }
         }

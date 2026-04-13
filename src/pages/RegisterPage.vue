@@ -245,7 +245,7 @@
 		background-color: @page-background-color;
 		.scroll-view{
 			flex: 1;
-			padding: 0 @page-padding;
+			padding: 0 @middle-padding;
 			box-sizing: border-box;
 			/deep/.uni-scroll-view-content {
 				height: auto;
@@ -259,7 +259,7 @@
 					width: 100%;
 					display: flex;
 					align-items: center;
-					margin-top: @page-padding;
+					margin-top: @middle-padding;
 					border-bottom: 1rpx solid @page-background-color;
 					&:first-child{
 						margin-top:0;
@@ -272,7 +272,7 @@
 					}
 					.input{
 						flex: 1;
-						padding-left: @small-margin;
+						padding-left: @small-padding;
 						height: @input-height
 					}
 					/deep/.icon-calendar{
@@ -283,12 +283,12 @@
 			.login-btn{
 				text-align: center;
 				width: 100%;
-				padding: @page-padding;
+				padding: @middle-padding;
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
-				margin:  @page-padding 0;
+				margin:  @middle-padding 0;
 				background-color: @warn-color;
-				color: @module-background-color;
+				color: @white-color;
 				display: inline-block;
 			}
 		}

@@ -44,12 +44,12 @@
         height: 100%;
         left: 0;
         top: 0;
-        background: @black-background-color;
+        background: @black-color;
         opacity: 0.5;
     }
     .dialog-body-wrapper{
         height: 80%;
-        background: @white-background-color;
+        background: @white-color;
         position: absolute;
         width: 100%;
         z-index: 1;
@@ -68,7 +68,7 @@
             align-items: center;
             .icon-close{
                 position: absolute;
-                right: @page-padding;
+                right: @middle-padding;
                 top: 50%;
                 transform: translateY(-50%);
                 opacity: 0.5;

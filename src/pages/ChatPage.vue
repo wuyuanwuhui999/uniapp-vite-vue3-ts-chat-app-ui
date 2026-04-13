@@ -969,10 +969,10 @@
 	.page-wrapper{
 		position: relative;
 		.page-header {
-			padding: @page-padding;
+			padding: @middle-padding;
 			display: flex;
 			justify-content: space-between;
-			background: @module-background-color;
+			background: @white-color;
 			align-items: center;
 			.icon-back{
 				width: @small-icon-size;
@@ -1008,11 +1008,11 @@
 						top: calc(@arrow-size * -2);
 					}
 					.menu-list{
-						padding: @page-padding;
+						padding: @middle-padding;
 						display: flex;
 						flex-direction: column;
-						color:@white-background-color;
-						gap:@page-padding;
+						color:@white-color;
+						gap:@middle-padding;
 						.menu-line{
 							height: 1rpx;
 							background-color: @pop-line-color;
@@ -1041,19 +1041,19 @@
 				.chat-list{
 					display: flex;
 					flex-direction: column;
-					gap: @page-padding;
-					padding: @page-padding;
+					gap: @middle-padding;
+					padding: @middle-padding;
 					.chat-wrapper{
 						display: flex;
-						gap:@page-padding;	
+						gap:@middle-padding;	
 						.chat-prompt-wrapper{
 							flex: 1;
 							display: flex;
 							justify-content: flex-end;
 							.chat-prompt{
 								max-width: 100%;
-								background-color: @module-background-color;
-								padding: @page-padding;
+								background-color: @white-color;
+								padding: @middle-padding;
 								border-radius: @btn-border-radius;
 								position: relative;
 							}
@@ -1063,8 +1063,8 @@
 							display: flex;
 							.chat-text{
 								max-width: 100%;
-								background-color: @module-background-color;
-								padding: @page-padding;
+								background-color: @white-color;
+								padding: @middle-padding;
 								border-radius: @btn-border-radius;
 								position: relative;
 								
@@ -1083,11 +1083,11 @@
 							border-bottom: 15rpx solid transparent; 
 							&.icon-angle-left{
 								left: -15rpx;
-								border-right: 15rpx solid @module-background-color;
+								border-right: 15rpx solid @white-color;
 							}
 							&.icon-angle-right{
 								right: -15rpx;
-								border-left: 15rpx solid @module-background-color;
+								border-left: 15rpx solid @white-color;
 							}
 						}
 					}
@@ -1101,23 +1101,23 @@
 				display: flex;
 				justify-content: flex-start;
 				background-color: @page-background-color;
-				padding: @page-padding 0;
-				gap: @page-padding;
+				padding: @middle-padding 0;
+				gap: @middle-padding;
 				flex-wrap: nowrap;
 				width: auto;
 				float: left;
 				.type-item{
-					padding: @small-margin @page-padding;
+					padding: @small-padding @middle-padding;
 					color: @sub-title-color;
-					border: 1rpx solid @disable-text-color;
+					border: 1rpx solid @gray-color;
 					border-radius: @big-border-radius;
-					background-color: @module-background-color;
+					background-color: @white-color;
 					display: flex;
 					justify-content: center;
 					align-items: center;
 					white-space: nowrap;
 					flex-shrink: 0;
-					gap:@small-margin;
+					gap:@small-padding;
 					&.type-item-doc{
 						display: flex;
 					}
@@ -1125,14 +1125,14 @@
 						color: #000;
 					}
 					&.type-item-active{
-						border-color: @selected-color;
-						color:  @selected-color;
+						border-color: @primary-color;
+						color:  @primary-color;
 					}
 					&:first-child{
-						margin-left: @page-padding;
+						margin-left: @middle-padding;
 					}
 					&:last-child{
-						margin-right: calc(@page-padding * 3);
+						margin-right: calc(@middle-padding * 3);
 					}
 				}
 			}
@@ -1140,16 +1140,16 @@
 		
 		.input-wrapper{
 			display: flex;
-			gap:@page-padding;
-			padding: @page-padding;
-			background-color: @module-background-color;
+			gap:@middle-padding;
+			padding: @middle-padding;
+			background-color: @white-color;
 			align-items: center;
 			.chat-input{
 				background-color: @page-background-color;
 				flex: 1;
 				height: @middle-avater;
 				border-radius: @middle-avater;
-				padding-left: @page-padding;
+				padding-left: @middle-padding;
 				box-sizing: border-box;
 			}
 			.icon-wrapper{
@@ -1172,26 +1172,26 @@
 			height: 100%;
 			display: flex;
 			flex-direction: column;
-			gap:@page-padding;
+			gap:@middle-padding;
       		background: @page-background-color;
 			.create-directory{
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
-				padding: @page-padding;
+				padding: @middle-padding;
 			}
 			.directory-scroll{
 				flex: 1;
 				height: 0;
-        		margin-bottom: @page-padding;
+        		margin-bottom: @middle-padding;
 				.directory-list{
-          			margin: @page-padding;
+          			margin: @middle-padding;
 					.directory-item{
 						display: flex;
 						flex-direction: column;
 						align-items: center;
-						padding: @page-padding;
-            			border-bottom: 1rpx solid @disable-text-color;
+						padding: @middle-padding;
+            			border-bottom: 1rpx solid @gray-color;
 						&:first-child{
 							padding-top: 0;
 						}
@@ -1203,7 +1203,7 @@
 							display: flex;
 							width: 100%;
 							align-items: center;
-							gap:@small-margin
+							gap:@small-padding
 						}
 						.directory-name{
 							text-overflow: ellipsis;
@@ -1223,8 +1223,8 @@
 							display: flex;
 							flex-direction: column;
 							width: 100%;
-							gap: @page-padding;
-							margin-top: @page-padding;
+							gap: @middle-padding;
+							margin-top: @middle-padding;
 							.doc-item{
 								display: flex;
 								.doc-name{
@@ -1237,9 +1237,9 @@
 			}	
 			.dialog-btn-wrapper{
 				display: flex;
-				gap:@page-padding;
-				padding: @page-padding;
-        		background: @module-background-color;
+				gap:@middle-padding;
+				padding: @middle-padding;
+        		background: @white-color;
 				.dialog-btn{
 					flex: 1;
 					height: @input-height;
@@ -1248,19 +1248,19 @@
 					align-items: center;
 					border-radius: @input-height;
 					&.dialog-btn-sure{
-						color: @module-background-color;
-						background-color: @line-color ;
-						border: 1rpx solid @line-color;
+						color: @white-color;
+						background-color: @gray-color ;
+						border: 1rpx solid @gray-color;
 					}
 					&.dialog-btn-cancle{
-						border:1rpx solid @disable-text-color;
+						border:1rpx solid @gray-color;
 					}
 				}
 			}		
 		}
 		.icon-add-directory{
 			position: absolute;
-			left: @page-padding;
+			left: @middle-padding;
 			top: 50%;
 			transform: translateY(-50%);
 			opacity: 0.5;
@@ -1281,11 +1281,11 @@
 				position: absolute;
 				left: 0;
 				top:0;
-				background-color: @black-background-color;
+				background-color: @black-color;
 				opacity: 0.5;
 			}
 			.create-wrapper{
-				background: @module-background-color;
+				background: @white-color;
 				position: relative;
 				z-index: 1;
 				border-radius: @module-border-radius;
@@ -1295,16 +1295,16 @@
 				width: 80%;
 				.create-tip{
 					width: 100%;
-					border-bottom: 1rpx solid @disable-text-color;
-					padding:  @page-padding;
+					border-bottom: 1rpx solid @gray-color;
+					padding:  @middle-padding;
 					box-sizing: border-box;
-					margin-bottom: @page-padding;
+					margin-bottom: @middle-padding;
 					text-align: center;
 				}
 				.create-form{
-					padding: calc(@page-padding * 3) @page-padding;
+					padding: calc(@middle-padding * 3) @middle-padding;
 					display: flex;
-					gap:@page-padding;
+					gap:@middle-padding;
 					width: 100%;
 					align-items: center;
 					box-sizing: border-box;
@@ -1312,27 +1312,27 @@
 						flex: 1;
 						height: @input-height;
 						outline: none;
-						padding: 0 @page-padding;
+						padding: 0 @middle-padding;
 						border-radius: @module-border-radius;
-						border: 1rpx solid @disable-text-color;
+						border: 1rpx solid @gray-color;
 					}
 				}
 				
 				.create-btn-wrapper{
 					display: flex;
 					width: 100%;
-					border-top: 1rpx solid @disable-text-color;
+					border-top: 1rpx solid @gray-color;
 					.create-btn{
 						flex: 1;
 						display: flex;
 						justify-content: center;
 						align-items: center;
-						border-right: 1rpx solid @disable-text-color;
+						border-right: 1rpx solid @gray-color;
 						box-sizing: border-box;
 						height: @btn-height;
 						&.create-sure{
-							border-right: 1rpx solid @disable-text-color;
-							color:@line-color;
+							border-right: 1rpx solid @gray-color;
+							color:@gray-color;
 						}
 					}
 					
@@ -1349,32 +1349,32 @@
 			display: flex;
 			.side-mask{
 				flex:1;
-				background-color: @black-background-color;
+				background-color: @black-color;
 				opacity: 0.5;
 			}
 		}
 		.pop-scroll-view{
-			background-color: @module-background-color;
+			background-color: @white-color;
 			&.side-scroll-view{
 				width: 80%;
 			}
 			height: 100vh;
-			padding: @page-padding;
+			padding: @middle-padding;
 			box-sizing: border-box;
 			.line{
 				height: 1rpx;
-				background-color: @disable-text-color;
-				margin-bottom: @page-padding;
+				background-color: @gray-color;
+				margin-bottom: @middle-padding;
 			}
 			.history-list{
-				padding: @page-padding;
+				padding: @middle-padding;
 				display: flex;
 				flex-direction: column;
-				gap: calc(@page-padding * 2);
+				gap: calc(@middle-padding * 2);
 				.chat-item{
 					display: flex;
 					flex-direction: column;
-					gap:  @page-padding;
+					gap:  @middle-padding;
 					.chat-time{
 						color: @sub-title-color;
 					}
@@ -1396,20 +1396,20 @@
 				justify-content: center;
 				align-items: center;
 				background-color: @warn-color;
-				margin-left: @page-padding;
+				margin-left: @middle-padding;
 				.delete-button-text{
-					color: @module-background-color;
-					padding: 0 calc(@page-padding * 2);
+					color: @white-color;
+					padding: 0 calc(@middle-padding * 2);
 				}
 			}
 			.directory-name{
-				padding-bottom: @page-padding;
+				padding-bottom: @middle-padding;
 				display: block;
 			}
 			.doc-item{
-				padding-bottom: @page-padding;
-				border-bottom: 1rpx solid @disable-text-color;
-				padding-top: @page-padding;
+				padding-bottom: @middle-padding;
+				border-bottom: 1rpx solid @gray-color;
+				padding-top: @middle-padding;
 				&:last-child{
 					border-bottom: none;
 				}
@@ -1421,7 +1421,7 @@
 				}
 				.doc-time{
 					color: @sub-title-color;
-					padding-left: @page-padding;
+					padding-left: @middle-padding;
 				}
 				
 			}

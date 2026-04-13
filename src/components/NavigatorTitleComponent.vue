@@ -32,10 +32,10 @@
 	@import '../theme/size.less';
 
 	.page-header {
-		padding: @page-padding;
+		padding: @middle-padding;
 		display: flex;
 		justify-content: space-between;
-		background: @module-background-color;
+		background: @white-color;
 
 		.icon-back{
 			width: @small-icon-size;
