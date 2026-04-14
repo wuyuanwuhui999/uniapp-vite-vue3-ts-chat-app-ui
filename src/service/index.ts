@@ -276,3 +276,12 @@ export const deleteCollectPromptService = (tenantId:string,categoryId:string,pro
 export const getDocListByDirIdService = (tenantId:string,directoryId:string):Promise<MyAwesomeData<types.DocumentInterface[]>> => {
     return httpRequest.get<types.DocumentInterface[]>(`${api.getDocListByDirId}?tenantId=${tenantId}&directoryId=${directoryId}`);
 }
+
+/**
+ * @description: 获取提示词
+ * @date: 2026-04-14
+ * @author wuwenqiang
+ */
+export const getPromptService = (tenantId: string): Promise<MyAwesomeData<types.PromptInterface>> => {
+  return httpRequest.get<types.PromptInterface>(`${api.getPrompt}?tenantId=${tenantId}`);
+}

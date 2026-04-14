@@ -194,3 +194,12 @@ export interface SystemPromptType {
   createTime: string
   updateTime: string;
 }
+
+export interface PromptInterface {
+  id: string;
+  tenantId: string;
+  userId: string;
+  prompt: string;
+  createTime?: string;
+  updateTime?: string;
+}

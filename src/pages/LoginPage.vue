@@ -14,36 +14,37 @@
 
 			<view class="login-input-wrapper" v-show="tabIndex === 0">
 				<image :src="icon_user_active" class="icon-login"/>
-				<input v-model="userAccount" @blur="userVertify('userAccount')" class="login-input" placeholder="请输入账号或者邮箱"/>
+				<input v-model="userAccount" @blur="userVertify('userAccount')" @input="onAccountInput" class="login-input" placeholder="请输入账号或者邮箱"/>
 			</view>
 
 			<view class="login-input-wrapper" v-show="tabIndex === 0">
 				<image :src="icon_password" class="icon-login"/>
-				<input type="password" v-model="password" @blur="userVertify('password')" class="login-input" placeholder="请输入密码"/>
+				<input type="password" v-model="password" @blur="userVertify('password')" @input="onAccountInput" class="login-input" placeholder="请输入密码"/>
 			</view>
 
 			<view class="login-input-wrapper" v-show="tabIndex === 1">
 				<image :src="icon_user_active" class="icon-login"/>
-				<input v-model="email" class="login-input"  @blur="userVertify('email')" placeholder="请输入邮箱"/>
+				<input v-model="email" class="login-input" @blur="userVertify('email')" @input="onEmailInput" placeholder="请输入邮箱"/>
 				<image @click="useSendEmailVertifyCode" :src="icon_send" class="icon-login icon-send"/>
 			</view>
 
 			<view class="login-input-wrapper" v-show="tabIndex === 1">
 				<image :src="icon_user_active" class="icon-login"/>
-				<input v-model="code" class="login-input" @blur="userVertify('code')" placeholder="请输入验证码"/>
+				<input v-model="code" class="login-input" @blur="userVertify('code')" @input="onEmailInput" placeholder="请输入验证码"/>
 			</view>
 
-			<view class="login-btn" @click="useLogin">登录</view>
+			<view class="login-btn" :class="{'login-btn-active': isAccountLoginDisabled, 'login-btn-disabled': !isAccountLoginDisabled}" v-show="tabIndex === 0" @click="useLogin">登录</view>
+			<view class="login-btn" :class="{'login-btn-active': isEmailLoginDisabled, 'login-btn-disabled': !isEmailLoginDisabled}" v-show="tabIndex === 1" @click="useLogin">登录</view>
 
 			<view class="register-btn" @click="useRegister">注册</view>
 
-			<view class="register-btn" @click="useForgetPassword">忘记密码</view>
+			<view class="forget-password-btn" @click="useForgetPassword">忘记密码？</view>
 		</view>
 	</view>
 </template>
 
 <script setup lang="ts">
-	import { ref } from 'vue';
+	import { ref, computed } from 'vue';
 	import { loginService, loginByEmailService, sendEmailVertifyCodeService} from '../service';
 	import { useStore } from '../stores/useStore';
 	import {httpRequest} from '../utils/HttpUtils';
@@ -53,17 +54,64 @@
 	import icon_password from '../../static/icon_password.png';
 	import icon_send from '../../static/icon_send.png';
 	
-	const userAccount = ref<string>('');
-	const password = ref<string>('');
+	const userAccount = ref<string>('吴怨吴悔');
+	const password = ref<string>('123456');
 	const tabIndex = ref<number>(0);
 	const email = ref<string>('');
 	const code = ref<string>('');
 
 	const store = useStore();
-	userAccount.value = store.userData.userAccount;
-	uni.getStorage({key:userAccount.value}).then(res=>{
-		password.value = res.data || ""
+	
+	// 设置初始值，处理可能为 undefined 的情况
+	if (store.userData && store.userData.userAccount) {
+		userAccount.value = store.userData.userAccount;
+	}
+	
+	uni.getStorage({key: userAccount.value || 'default'}).then(res=>{
+		password.value = (res && res.data) || ""
+	}).catch(()=>{
+		password.value = ""
 	});
+
+	/**
+	 * @description: 账号密码登录按钮是否可用
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const isAccountLoginDisabled = computed(() => {
+		const account = userAccount.value || '';
+		const pwd = password.value || '';
+		return account.trim() !== '' && pwd.trim() !== '';
+	});
+
+	/**
+	 * @description: 邮箱登录按钮是否可用
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const isEmailLoginDisabled = computed(() => {
+		const emailValue = email.value || '';
+		const codeValue = code.value || '';
+		return emailValue.trim() !== '' && codeValue.trim() !== '';
+	});
+
+	/**
+	 * @description: 账号密码输入监听
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const onAccountInput = () => {
+		// 触发计算属性重新计算
+	};
+
+	/**
+	 * @description: 邮箱验证码输入监听
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const onEmailInput = () => {
+		// 触发计算属性重新计算
+	};
 
 	const useTab = (index:number)=>{
 		tabIndex.value = index;
@@ -75,25 +123,25 @@
 	 * @author wuwenqiang
 	 */
 	const userVertify = (field:string)=>{
-		if(field === "userAccount" && userAccount.value.trim() === ""){
+		if(field === "userAccount" && (!userAccount.value || userAccount.value.trim() === "")){
 			uni.showToast({
 				duration:2000,
 				position:'center',
 				title:'请输入账号'
 			})
-		}else if(field === "password" && (password.value.trim().length < 6 || password.value.trim().length > 18)){
+		}else if(field === "password" && (!password.value || password.value.trim().length < 6 || password.value.trim().length > 18)){
 			uni.showToast({
 				duration:2000,
 				position:'center',
 				title:'请输入6-18位的密码'
 			})
-		}else if(field === 'email' && !EMAIL_REG.test(email.value.trim())){
+		}else if(field === 'email' && (!email.value || !EMAIL_REG.test(email.value.trim()))){
 			uni.showToast({
 				duration:2000,
 				position:'center',
 				title:'请输入正确的邮箱格式'
 			})
-		}else if(field === 'code' && code.value.trim().length !== 4){
+		}else if(field === 'code' && (!code.value || code.value.trim().length !== 4)){
 			uni.showToast({
 				duration:2000,
 				position:'center',
@@ -104,13 +152,13 @@
 
 	const useLogin = () => {
 		if(tabIndex.value === 0){
-			if(!userAccount.value.trim()){
+			if(!userAccount.value || !userAccount.value.trim()){
 				uni.showToast({
 					duration:2000,
 					position:'center',
 					title:'账号不能为空'
 				})
-			}else if(password.value.trim().length > 18 || password.value.trim().length < 6){
+			}else if(!password.value || password.value.trim().length > 18 || password.value.trim().length < 6){
 				uni.showToast({
 					duration:2000,
 					position:'center',
@@ -144,13 +192,13 @@
 				})
 			}
 		}else{
-			if(!EMAIL_REG.test(email.value.trim())){
+			if(!email.value || !EMAIL_REG.test(email.value.trim())){
 				uni.showToast({
 					duration:2000,
 					position:'center',
 					title:'请输入正确的邮箱格式'
 				})	
-			}else if(code.value.trim().length !== 4){
+			}else if(!code.value || code.value.trim().length !== 4){
 				uni.showToast({
 					duration:2000,
 					position:'center',
@@ -159,7 +207,6 @@
 			}else{
 				uni.showLoading();
 				loginByEmailService(email.value,code.value).then((res)=>{
-					uni.setStorage({key:userAccount.value,data:password.value});
 					store.setUserData(res.data)
 					store.setToken(res.token)
 					uni.setStorage({key:'token',data:res.token});
@@ -186,7 +233,7 @@
 	}
 
 	const useSendEmailVertifyCode = () => {
-		if(EMAIL_REG.test(email.value.trim())){
+		if(email.value && EMAIL_REG.test(email.value.trim())){
 			uni.showLoading()
 			sendEmailVertifyCodeService(email.value).then((res)=>{
 				uni.showToast({
@@ -291,9 +338,17 @@
 				box-sizing: border-box;
 				border-radius: @big-border-radius;
 				margin-top:  @middle-padding;
-				background-color: @warn-color;
-				color: @white-color;
 				display: inline-block;
+				height: @btn-height;
+				line-height: calc(@btn-height - @middle-padding * 2);
+				&.login-btn-active{
+					background-color: @primary-color;
+					color: @white-color;
+				}
+				&.login-btn-disabled{
+					background-color: @gray-color;
+					color: @white-color;
+				}
 			}
 
 			.register-btn{
@@ -306,6 +361,17 @@
 				margin-top:  @middle-padding;
 				display: inline-block;
 				background-color: transparent;
+			}
+
+			.forget-password-btn{
+				text-align: center;
+				width: 100%;
+				padding: @middle-padding;
+				box-sizing: border-box;
+				margin-top: @middle-padding;
+				display: inline-block;
+				background-color: transparent;
+				color: @gray-color;
 			}
 		}
 	}

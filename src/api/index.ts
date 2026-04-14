@@ -1,15 +1,15 @@
 export default {
   login: '/service/user/login', //登录
-  getUserData: '/service/user-getway/getUserData', // 获取用户信息
-  updateUser: '/service/user-getway/updateUser',//更新用户信息
+  getUserData: '/service/user/getUserData', // 获取用户信息
+  updateUser: '/service/user/updateUser',//更新用户信息
   register: '/service/user/register',//注册
   vertifyUser: '/service/user/vertifyUser',// 校验账号是否存在
   sendEmailVertifyCode: '/service/user/sendEmailVertifyCode',// 找回密码
   resetPassword: '/service/user/resetPassword',// 重置密码
-  updateAvater:'/service/user-getway/updateAvater',//更新头像
-  updatePassword: '/service/user-getway/updatePassword',//更新密码
+  updateAvater:'/service/user/updateAvater',//更新头像
+  updatePassword: '/service/user/updatePassword',//更新密码
   loginByEmail: '/service/user/loginByEmail',//邮箱登录
-  searchUsers: "/service/user-getway/searchUsers",// 搜索用户
+  searchUsers: "/service/user/searchUsers",// 搜索用户
   chat:"/service/chat/chat",// ai聊天
   getChatHistory: "/service/chat/getChatHistory",// ai聊天
   // chatWs: "/service/music/ws/chat",// ai聊天
@@ -35,5 +35,6 @@ export default {
   deleteCollectPrompt: "/service/prompt/deleteCollectPrompt/",// 删除收藏
   getMyCollectPromptCategory: "/service/prompt/getMyCollectPromptCategory",// 获取我收藏的提示词分类
   getMyCollectPromptList: "/service/prompt/getMyCollectPromptList",// 获取我收藏的提示词列表
-  getDocListByDirId: "/service/chat/getDocListByDirId"// 获取我收藏的提示词列表
+  getDocListByDirId: "/service/chat/getDocListByDirId",// 获取我收藏的提示词列表
+  getPrompt: '/service/prompt/getPrompt',// 获取提示词
 };

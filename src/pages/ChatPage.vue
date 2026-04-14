@@ -2,7 +2,11 @@
 	<view class="page-wrapper">
 		<view class="page-header">
 			<AvaterComponent size="small"/>
-			<text class="my-favorite" @click="onSwitchModel">当前接入模型：{{ chatModelList[activeModelIndex]?.modelName }}</text>
+			<view class="title-wrapper">
+				<text @click="onSwitchTenant">{{ store.tenantUser?.tenantName || '租户' }}</text>
+				<text>|</text>
+				<text @click="onSwitchModel">{{chatModelList.length > 0 ? chatModelList[activeModelIndex].modelName : ""}}</text>
+			</view>
 			<view class="menu-wrapper">
 				<image class="icon-small icon-record" @click="onShowMenu" :src="icon_menu"/>
 				<template v-if="showMenu">
@@ -25,7 +29,6 @@
 					<view class="menu-mask" @click="onHideMenu"></view>
 				</template>
 			</view>
-			
 		</view>
 		<view class="page-body">
 			<scroll-view class="scroll-view" scroll-y :show-scrollbar="false" :scroll-top="scrollTop" @scroll="onScroll">
@@ -42,12 +45,10 @@
 													{{ item.thinkContent.replace(/^(<think>)[\s\s\n]?|(<\/think>[\s\S\n]?)$/gi,"") }}
 												</text>
 											</view>
-										
 											<!-- 正式回答黑色区块 -->
 											 <view class="response-box">
 												<mp-html :content="marked.parse(item.responseContent)"></mp-html>
 											 </view>
-
 									</view>
 								</view>		
 								<image v-if="item.type === 'system'" @click="onEditPrompt" :src="icon_edit" class="icon-small"/>
@@ -132,7 +133,8 @@
 				</scroll-view>
 			</template>
 		</DialogComponent>
-		<OptionsDialog ref="modelOptionsDialog" @onCheck= "onCheckModel" :options="chatModelOption"/>
+		<OptionsDialog ref="modelOptionsDialog" @onCheck="onCheckModel" :options="chatModelOption"/>
+		<OptionsDialog ref="tenantOptionsDialog" @onCheck="onSelectTenant" :options="tenantOptionList"/>
 		<PopupComponent :text="dialogText" @on-sure="sureDeleteDoc" ref="popupComponent"></PopupComponent>
 		<DialogComponent v-if="showDirDialog" @onClose="showDirDialog = false">
 			<template #header>
@@ -237,7 +239,9 @@
       UploadResponse,
       DirectoryInterce,
       TenantUserType,
-	  DirectoryCheckInterface
+	  DirectoryCheckInterface,
+	  PromptInterface,
+	  TenantType
     } from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
@@ -251,6 +255,8 @@
       getDirectoryListService,
       createDirectoryService,
       getTenantUserService,
+      getPromptService,
+      getTenantListService
     } from "../service";
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
@@ -293,6 +299,8 @@
 	const chatModelList = reactive<Array<ChatModelType>>([]);
 	const chatModelOption = reactive<Array<OptionType>>([]);
 	const modelOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
+	const tenantOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
+	const tenantOptionList = reactive<OptionType[]>([]);
 	const type = ref<string>("");
 	const language = ref<LanguageEnum>(LanguageEnum.zh);
 	const directoryId = ref<string>("default");
@@ -301,6 +309,7 @@
 	const showCreateDialog = ref<boolean>(false);// 创建文件夹弹窗
 	const directoryName = ref<string>("");// 文件夹名称
 	const showCheckDocument = ref<boolean>(false);
+	const promptData = ref<PromptInterface | null>(null); // 存储提示词对象
 	const directoryList = reactive<DirectoryInterce[]>([{
 		directory:"默认文件夹",
 		id:"public",
@@ -644,7 +653,7 @@
 	}
 
 	/**	
-	 * @description: 切换类型
+	 * @description: 切换模型
 	 * @date: 2025-07-05 18:47
 	 * @author wuwenqiang
 	 */
@@ -876,20 +885,104 @@
 
 	/**
 	 * @author: wuwenqiang
+	 * @description: 获取提示词
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const getPrompt = (tenantId: string) => {
+		if (!tenantId) return;
+		getPromptService(tenantId).then((res) => {
+			if (res.data) {
+				promptData.value = res.data;
+				// 如果后端返回了提示词，更新到 store 中
+				if (res.data.prompt) {
+					store.setPrompt(res.data.prompt);
+				}
+			}
+		}).catch((err) => {
+			console.error('获取提示词失败:', err);
+		});
+	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 获取租户列表（用于切换租户弹窗）
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const getTenantListForSwitch = () => {
+		getTenantListService().then((res) => {
+			tenantOptionList.length = 0;
+			tenantOptionList.push({ value: store.userData.id!, text: "私人空间" });
+			res.data.forEach((item: TenantType) => {
+				tenantOptionList.push({ value: item.id, text: item.name });
+			});
+		});
+	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 显示租户切换弹窗
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const onSwitchTenant = () => {
+		getTenantListForSwitch();
+		tenantOptionsDialog.value?.$refs.popup.open('top');
+	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 选择租户后切换
+	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const onSelectTenant = (tenantId: string) => {
+		getTenantUserService(tenantId).then(res => {
+			const data: TenantUserType = res.data ? res.data as TenantUserType : {
+				id: "",
+				tenantId: store.userData.id!,
+				tenantName: "私人空间",
+				userId: store.userData.id!,
+				roleType: 0,
+				joinDate: "",
+				createBy: "",
+				username: store.userData.username,
+				avater: store.userData.avater,
+				disabled: 0,
+				email: store.userData.email
+			} as TenantUserType;
+			store.setTenantUser(data);
+			uni.setStorage({ key: `${store.userData.id}:tenantId`, data: data.tenantId ?? "" });
+			// 切换租户后重新获取提示词
+			getPrompt(data.tenantId ?? "");
+		});
+	}
+
+	/**
+	 * @author: wuwenqiang
 	 * @description: 获取租户i
 	 * @date: 2025-8-10 18:06
 	 */
 	const getStorageTenant = ()=>{
 		uni.getStorage({key:`${store.userData.id}:tenantId`}).then((res)=>{
-			getTenantUserService(res.data??"").then((respone)=>{
+			const tenantId = res.data ?? "";
+			getTenantUserService(tenantId).then((respone)=>{
 				if(respone.data){
-				store.setTenantUser(respone.data as TenantUserType);
+					store.setTenantUser(respone.data as TenantUserType);
+					// 获取租户对应的提示词
+					getPrompt(tenantId);
 				}else{
-				store.setTenantUser(getDefaultTenantUser());
+					store.setTenantUser(getDefaultTenantUser());
+					getPrompt(store.userData.id!);
 				}
-			})
-				}).catch(()=>{
+			}).catch(()=>{
+				store.setTenantUser(getDefaultTenantUser());
+				getPrompt(store.userData.id!);
+			});
+		}).catch(()=>{
 			store.setTenantUser(getDefaultTenantUser());
+			getPrompt(store.userData.id!);
 		});
 		uni.getStorage({key:`${store.userData.id}:prompt`}).then((res)=>{
 			if(res.data){
@@ -901,6 +994,7 @@
 	const getDefaultTenantUser = ():TenantUserType=>{
 		const defaultTenantUser:TenantUserType = {...DEFAULT_TENANT_USER};
 		defaultTenantUser.tenantId = store.userData.id!;
+		defaultTenantUser.userId = store.userData.id!;
 		return defaultTenantUser;
 	}
     /**
@@ -974,6 +1068,16 @@
 			justify-content: space-between;
 			background: @white-color;
 			align-items: center;
+			.title-wrapper {
+				flex: 1;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				gap:@middle-padding;
+				.tenant-name,.model-name {
+					font-size: @normal-font-size;
+				}
+			}
 			.icon-back{
 				width: @small-icon-size;
 				height: @small-icon-size;

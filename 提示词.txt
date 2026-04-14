@@ -1,0 +1,15 @@
+这是基于vue3开发的uniapp项目，按照要求帮我实现以下功能
+1、在LoginPage.vue页面中，如果帐号/密码登陆框为空，登陆按钮为灰色@grag-color不可点击，如果帐号密码不为空，登陆按钮背景颜色为@primary-color颜色,在邮箱验证登陆页签下也一样，邮箱和验证码不为空时，登陆按钮颜色为@primary-color，否则为@grag-color不可点击，
+2、去掉忘记密码按钮的圆角和边框，“忘记密码”改成“忘记密码？”，颜色为@grag-color
+请遵守开发规范
+1、路由页面放到pages文件夹中，如果是开发页面，如果是页面中的一个组件，放到components中
+2、所有的间距都统一使用theme/size.less里面的@middle-padding，包括图标与图标的间距，按钮和按钮的间距，图片和文字的间距，按钮和文字的间距，布局和布局之间的间距，文字到边边的距离，以及每条数据上下的间隔,所有的padding和margin,统一使用@middle-padding间距大小
+3、页面背景色统一使用theme/color.less里面的@page-background-color,应用的主色调是@primary-color，激活状态的按钮使用@primary-color颜，删除按钮背景颜色为@warn-color,确定按钮的背景颜色统一为@primary-color，文字颜色为白色@white-color，取消按钮的背景颜色为透明色，边框颜色和文字为@gray-color，禁用状态的按钮背景颜色为@gray-color
+4、所有按钮高度统一使用theme/size.less里面的@btn-height，圆角大小为@btn-border-radius，单行文字的搜索框和输入框高度统一设置Dimens.inputHeight，圆角大小为Dimens::inputHeight/2，卡片式的矩形圆角大小为Dimens.borderRadius
+6、小图标使用theme/size.less里面的@small-icon-size，中等图标使用@middle-icon-size，大图标使用@big-icon-size，图标透明度为0.5
+7、正常的字体大小使用theme/size.less里面的@normal-font-size，大标题使用@big-font-size
+6、后端所有接口返回数据格式统一使用HttpUtils/MyAwesomeData，MyAwesomeData中的data是后端返回的数据，data可以是json、数组、字符串、数字类型，MyAwesomeData里面的total是是总条数，只有分页加载的接口才返回total，其他接口返回的total是null，msg是服务器返回信息，一般只有在失败的时候才返回，status == "SUCCESS"表示服务调用成功，否则表示失败，所有后端请求的方法都放在service/index.ts里面
+7、后端接口地址统一放到api/index.ts里面，后端所有接口除了登陆接口外，其他请求头中都要添加:Authorization:Bearer token，所有的对象类型接口放到types/index.ts目录里面
+9、修改了代码之后说明一下修改哪个地方
+10、给每个方法和主要的逻辑添加注释
+11、修改之后如果文件太大代码行数太大就不用输出完整的文件代码，只要输出完整的方法体，如果文件代码量少于500行，就输出完整的文件代码
