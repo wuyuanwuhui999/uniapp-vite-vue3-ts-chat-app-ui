@@ -83,7 +83,6 @@ export interface UploadResponse {
 
 export interface PayloadInterface {
   modelId: string;
-  token: string; // 替换为实际用户ID
   chatId:string; // 替换为实际聊天ID
   tenantId:string;
   type: string;

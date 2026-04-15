@@ -356,14 +356,13 @@
 			chatList.push(item);
 			const payload:PayloadInterface = {
 				modelId: chatModelList[activeModelIndex.value].id,
-				token: store.token, // 替换为实际用户ID
 				chatId, // 替换为实际聊天ID
 				type:type.value,
 				systemPrompt:store.prompt,
 				docIds:type.value == 'document' ? checkedDocIds : [],
 				prompt: inputValue.value.trim(),
 				showThink:showThink.value,
-        		tenantId:store.tenantUser?.tenantId!,
+        		tenantId:store.tenantUser?.id!,
 				language: LanguageMap[language.value],
 			};
 			console.log(payload)
@@ -403,7 +402,7 @@
 	 */
 	const useChatHistory = () => {
 		chatHistoryData.length = 0;
-		getChatHistoryService(pageNum.value,PAGE_SIZE).then((res) => {
+		getChatHistoryService(store.tenantUser.id,pageNum.value,PAGE_SIZE).then((res) => {
 			total.value = res.total;
 			const chatIdGroud:GroupedByChatIdType = {};
 			res.data.forEach((item)=>{
@@ -497,7 +496,7 @@
 	const connectWebSocket = () => {
 		return new Promise((resolve,reject)=>{
 			socketTask = uni.connectSocket({
-				url: `${HOST.replace(/http[s]?/,'ws')}${api.chatWs}`,
+				url: `${HOST.replace(/http[s]?/,'ws')}${api.chatWs}?token=${store.token}`,
 				success: (res) => {
 					console.log('WebSocket 连接成功:', res);
 					
@@ -1168,7 +1167,7 @@
 								max-width: 100%;
 								background-color: @white-color;
 								padding: @middle-padding;
-								border-radius: @btn-border-radius;
+								border-radius: calc(@btn-border-radius / 2);
 								position: relative;
 								
 								.think-text{

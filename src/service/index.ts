@@ -92,8 +92,8 @@ export const loginByEmailService = (email:string,code:string):Promise<MyAwesomeD
  * @date: 2025-05-16 00:19
  * @author wuwenqiang
  */
-export const getChatHistoryService = (pageNum:number,pageSize:number):Promise<MyAwesomeData<Array<types.ChatHistoryType>>> => {
-    return httpRequest.get<Array<types.ChatHistoryType>>(`${api.getChatHistory}?pageNum=${pageNum}&pageSize=${pageSize}`);
+export const getChatHistoryService = (tenantId:string,pageNum:number,pageSize:number):Promise<MyAwesomeData<Array<types.ChatHistoryType>>> => {
+    return httpRequest.get<Array<types.ChatHistoryType>>(`${api.getChatHistory}?pageNum=${pageNum}&pageSize=${pageSize}&tenantId=${tenantId}`);
 }
 
 /**
