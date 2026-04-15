@@ -85,7 +85,6 @@
 					<text @click="onCheckType('document')">知识库</text>
 					<image class="icon-mini" @click="onSetDocument" :src="type == 'document' ? icon_setting_active : icon_setting_disabled"/>
 				</view>
-				<text class="type-item" :class="{'type-item-active': type === 'db'}" @click="onCheckType('db')">查询数据库</text>
 				<view class="type-item type-item-language" @click="onSwitchLang()"><text>{{ language }}</text><image class="icon-small" :src="icon_switch"/></view>
 			</view>
 		</scroll-view>

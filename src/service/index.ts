@@ -285,3 +285,12 @@ export const getDocListByDirIdService = (tenantId:string,directoryId:string):Pro
 export const getPromptService = (tenantId: string): Promise<MyAwesomeData<types.PromptInterface>> => {
   return httpRequest.get<types.PromptInterface>(`${api.getPrompt}?tenantId=${tenantId}`);
 }
+
+/**
+ * @description: 更新提示词
+ * @date: 2026-04-15
+ * @author wuwenqiang
+ */
+export const updatePromptService = (promptData: types.PromptInterface): Promise<MyAwesomeData<PromptInterface>> => {
+  return httpRequest.put<types.PromptInterface>(api.updatePrompt, promptData);
+}

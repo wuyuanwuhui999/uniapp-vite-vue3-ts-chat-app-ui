@@ -37,4 +37,5 @@ export default {
   getMyCollectPromptList: "/service/prompt/getMyCollectPromptList",// 获取我收藏的提示词列表
   getDocListByDirId: "/service/chat/getDocListByDirId",// 获取我收藏的提示词列表
   getPrompt: '/service/prompt/getPrompt',// 获取提示词
+  updatePrompt: '/service/prompt/updatePrompt',// 更新提示词
 };
