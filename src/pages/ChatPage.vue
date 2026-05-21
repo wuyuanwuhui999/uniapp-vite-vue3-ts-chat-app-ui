@@ -496,7 +496,7 @@
 	const connectWebSocket = () => {
 		return new Promise((resolve,reject)=>{
 			socketTask = uni.connectSocket({
-				url: `${HOST.replace(/http[s]?/,'ws')}${api.chatWs}?token=${store.token}`,
+				url: `${HOST.replace(/http[s]?/,'ws')}${api.chatWs}?token=Bearer ${store.token}`,
 				success: (res) => {
 					console.log('WebSocket 连接成功:', res);
 					
