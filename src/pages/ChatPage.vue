@@ -904,8 +904,117 @@
 
 	/**
 	 * @author: wuwenqiang
-	 * @description: 获取租户列表（用于切换租户弹窗）
+	 * @description: 显示租户切换弹窗
 	 * @date: 2026-04-14
+	 * @author wuwenqiang
+	 */
+	const onSwitchTenant = () => {
+		getTenantListForSwitch();
+		tenantOptionsDialog.value?.$refs.popup.open('top');
+	}
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 获取租户信息（优化版：先从缓存获取tenantId，再调用接口获取租户列表）
+	 * @date: 2026-06-01
+	 * @author wuwenqiang
+	 */
+	const getStorageTenant = async () => {
+		// 1. 先从缓存获取用户保存的租户ID（key为 userId:tenantId）
+		const cachedTenantId = await store.getTenantIdFromStorage();
+		
+		// 2. 获取当前公司下的所有租户列表
+		if (!store.company?.id) {
+			console.error('公司ID不存在');
+			store.setTenantUser(getDefaultTenantUser());
+			getPrompt(store.userData.id!);
+			return;
+		}
+		
+		try {
+			const res = await getTenantListService(store.company.id);
+			const tenantList = res.data || [];
+			
+			// 3. 如果缓存中有tenantId，在租户列表中查找匹配的记录
+			if (cachedTenantId) {
+				const matchedTenant = tenantList.find(tenant => tenant.id === cachedTenantId);
+				if (matchedTenant) {
+					// 找到匹配的租户，调用接口获取完整租户信息并设置
+					await setTenantUserByTenantId(matchedTenant.id);
+					return;
+				}
+			}
+			
+			// 4. 如果没有找到匹配的租户，使用默认逻辑（从缓存或接口获取租户信息）
+			await fallbackGetTenant();
+			
+		} catch (error) {
+			console.error('获取租户列表失败:', error);
+			await fallbackGetTenant();
+		}
+	};
+
+	/**
+	 * @description: 降级获取租户信息（兜底逻辑）
+	 * @date: 2026-06-01
+	 * @author wuwenqiang
+	 */
+	const fallbackGetTenant = async () => {
+		const cachedTenantId = await store.getTenantIdFromStorage();
+		
+		if (cachedTenantId) {
+			// 从缓存获取tenantId，调用接口获取租户详细信息
+			getTenantUserService(cachedTenantId).then((response) => {
+				if (response.data) {
+					store.setTenantUser(response.data as TenantUserType);
+					getPrompt(cachedTenantId);
+				} else {
+					store.setTenantUser(getDefaultTenantUser());
+					getPrompt(store.userData.id!);
+				}
+			}).catch(() => {
+				store.setTenantUser(getDefaultTenantUser());
+				getPrompt(store.userData.id!);
+			});
+		} else {
+			store.setTenantUser(getDefaultTenantUser());
+			getPrompt(store.userData.id!);
+		}
+		
+		// 获取提示词
+		uni.getStorage({ key: `${store.userData.id}:prompt` }).then((res) => {
+			if (res.data) {
+				store.setPrompt(res.data);
+			}
+		});
+	};
+
+	/**
+	 * @description: 根据租户ID设置租户信息
+	 * @date: 2026-06-01
+	 * @author wuwenqiang
+	 */
+	const setTenantUserByTenantId = async (tenantId: string) => {
+		try {
+			const response = await getTenantUserService(tenantId);
+			if (response.data) {
+				store.setTenantUser(response.data as TenantUserType);
+				getPrompt(tenantId);
+			} else {
+				store.setTenantUser(getDefaultTenantUser());
+				getPrompt(store.userData.id!);
+			}
+		} catch (error) {
+			console.error('获取租户信息失败:', error);
+			store.setTenantUser(getDefaultTenantUser());
+			getPrompt(store.userData.id!);
+		}
+	};
+
+	/**
+	 * @author: wuwenqiang
+	 * @description: 获取租户列表（用于切换租户弹窗）
+	 * @date: 2026-06-01
 	 * @author wuwenqiang
 	 */
 	const getTenantListForSwitch = () => {
@@ -918,35 +1027,43 @@
 			});
 			return;
 		}
-		getTenantListService(store.company?.id??"").then((res) => {
+		
+		// 显示加载提示
+		uni.showLoading({ title: '加载中...', mask: true });
+		
+		getTenantListService(store.company.id).then((res) => {
 			tenantOptionList.length = 0;
+			// 添加私人空间选项（私人空间的 tenantId 就是 userId）
 			tenantOptionList.push({ value: store.userData.id!, text: "私人空间" });
+			// 添加公司下的租户列表
 			res.data.forEach((item: TenantType) => {
 				tenantOptionList.push({ value: item.id, text: item.name });
 			});
+			// 打开选择弹窗
+			tenantOptionsDialog.value?.$refs.popup.open('top');
+		}).catch((err) => {
+			console.error('获取租户列表失败:', err);
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: '获取租户列表失败'
+			});
+		}).finally(() => {
+			uni.hideLoading();
 		});
 	}
 
 	/**
 	 * @author: wuwenqiang
-	 * @description: 显示租户切换弹窗
-	 * @date: 2026-04-14
+	 * @description: 选择租户后切换，并保存到缓存（key为 userId:tenantId）
+	 * @date: 2026-06-01
 	 * @author wuwenqiang
 	 */
-	const onSwitchTenant = () => {
-		getTenantListForSwitch();
-		tenantOptionsDialog.value?.$refs.popup.open('top');
-	}
-
-	/**
-	 * @author: wuwenqiang
-	 * @description: 选择租户后切换
-	 * @date: 2026-04-14
-	 * @author wuwenqiang
-	 */
-	const onSelectTenant = (tenantId: string) => {
-		getTenantUserService(tenantId).then(res => {
-			const data: TenantUserType = res.data ? res.data as TenantUserType : {
+	const onSelectTenant = async (tenantId: string) => {
+		uni.showLoading({ title: '切换中...', mask: true });
+		try {
+			const response = await getTenantUserService(tenantId);
+			const data: TenantUserType = response.data ? response.data as TenantUserType : {
 				id: "",
 				tenantId: store.userData.id!,
 				tenantName: "私人空间",
@@ -959,51 +1076,43 @@
 				disabled: 0,
 				email: store.userData.email
 			} as TenantUserType;
+			
+			// setTenantUser 内部会保存 tenantId 到缓存（key为 userId:tenantId）
 			store.setTenantUser(data);
-			uni.setStorage({ key: `${store.userData.id}:tenantId`, data: data.tenantId ?? "" });
 			// 切换租户后重新获取提示词
 			getPrompt(data.tenantId ?? "");
-		});
-	}
+			
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: '切换成功'
+			});
+		} catch (error) {
+			console.error('切换租户失败:', error);
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: '切换失败，请重试'
+			});
+		} finally {
+			uni.hideLoading();
+		}
+	};
 
 	/**
 	 * @author: wuwenqiang
-	 * @description: 获取租户i
-	 * @date: 2025-8-10 18:06
+	 * @description: 获取默认租户信息
+	 * @date: 2026-06-01
+	 * @author wuwenqiang
 	 */
-	const getStorageTenant = ()=>{
-		uni.getStorage({key:`${store.userData.id}:tenantId`}).then((res)=>{
-			const tenantId = res.data ?? "";
-			getTenantUserService(tenantId).then((respone)=>{
-				if(respone.data){
-					store.setTenantUser(respone.data as TenantUserType);
-					// 获取租户对应的提示词
-					getPrompt(tenantId);
-				}else{
-					store.setTenantUser(getDefaultTenantUser());
-					getPrompt(store.userData.id!);
-				}
-			}).catch(()=>{
-				store.setTenantUser(getDefaultTenantUser());
-				getPrompt(store.userData.id!);
-			});
-		}).catch(()=>{
-			store.setTenantUser(getDefaultTenantUser());
-			getPrompt(store.userData.id!);
-		});
-		uni.getStorage({key:`${store.userData.id}:prompt`}).then((res)=>{
-			if(res.data){
-				store.setPrompt(res.data)
-			}
-		})
-	}
-
-	const getDefaultTenantUser = ():TenantUserType=>{
-		const defaultTenantUser:TenantUserType = {...DEFAULT_TENANT_USER};
+	const getDefaultTenantUser = (): TenantUserType => {
+		const defaultTenantUser: TenantUserType = { ...DEFAULT_TENANT_USER };
 		defaultTenantUser.tenantId = store.userData.id!;
 		defaultTenantUser.userId = store.userData.id!;
+		defaultTenantUser.tenantName = "私人空间";
 		return defaultTenantUser;
 	}
+
     /**
      * @author: wuwenqiang
      * @description: 获取租户i

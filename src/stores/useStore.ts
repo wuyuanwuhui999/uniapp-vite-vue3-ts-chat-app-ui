@@ -35,6 +35,13 @@ export const useStore = defineStore("myStore", {
                 mTenantUser.tenantId = mTenantUser.userId;
             }
 			this.tenantUser = mTenantUser;
+			// 保存 tenantId 到缓存，key 为 userId:tenantId
+			if (this.userData.id && mTenantUser.tenantId) {
+				uni.setStorage({ 
+					key: `${this.userData.id}:tenantId`, 
+					data: mTenantUser.tenantId 
+				});
+			}
 		},
 		setPrompt(prompt:string){
 			this.prompt = prompt;
@@ -65,6 +72,23 @@ export const useStore = defineStore("myStore", {
 			return new Promise((resolve) => {
 				uni.getStorage({ 
 					key: `${this.userData.id}:companyId` 
+				}).then(res => {
+					resolve(res.data as string);
+				}).catch(() => {
+					resolve(null);
+				});
+			});
+		},
+		/**
+		 * @description: 从缓存获取租户ID（key为 userId:tenantId）
+		 * @date: 2026-06-01
+		 * @author wuwenqiang
+		 */
+		async getTenantIdFromStorage(): Promise<string | null> {
+			if (!this.userData.id) return null;
+			return new Promise((resolve) => {
+				uni.getStorage({ 
+					key: `${this.userData.id}:tenantId` 
 				}).then(res => {
 					resolve(res.data as string);
 				}).catch(() => {
