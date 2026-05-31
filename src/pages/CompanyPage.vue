@@ -67,14 +67,10 @@
                 const cachedCompanyId = await store.getCompanyIdFromStorage();
                 
                 if (cachedCompanyId) {
-                    // 检查缓存的公司ID是否在公司列表中
+                    // 检查缓存的公司ID是否在公司列表中，如果在则自动选中
                     const foundCompany = companyList.find(item => item.id === cachedCompanyId);
                     if (foundCompany) {
-                        // 找到匹配的公司，直接跳转到ChatPage
-                        store.setCompany(foundCompany);
-                        uni.redirectTo({
-                            url: '../pages/ChatPage'
-                        });
+                        selectedCompanyId.value = cachedCompanyId;
                         return;
                     }
                 }
@@ -105,7 +101,7 @@
     };
     
     /**
-     * @description: 确认选择公司
+     * @description: 确认选择公司，使用 reLaunch 清空所有路由堆栈后跳转到 ChatPage
      * @date: 2026-05-30
      * @author wuwenqiang
      */
@@ -121,8 +117,11 @@
         
         const selectedCompany = companyList.find(item => item.id === selectedCompanyId.value);
         if (selectedCompany) {
+            // 保存选中的公司信息到 store
             store.setCompany(selectedCompany);
-            uni.redirectTo({
+            // 使用 reLaunch 清空所有历史页面，然后跳转到 ChatPage
+            // 这样用户无法通过返回按钮回到 CompanyPage 或之前的任何页面
+            uni.reLaunch({
                 url: '../pages/ChatPage'
             });
         }

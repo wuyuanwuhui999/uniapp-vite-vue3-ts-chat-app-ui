@@ -32,6 +32,7 @@
 			<button class="btn-user" @click="onTabTenant">切换租户</button>
 			<button class="btn-user" v-if="(store.tenantUser?.roleType??0) > 0" @click="onManageTenant">租户管理</button>
 			<button class="btn-user" @click="useUpdatePassword">修改密码</button>
+			<button class="btn-user" @click="onSwitchCompany">切换公司/个人空间</button>
 			<button class="btn-user btn-logout" @click="useLogout">退出登录</button>
 		</view>
 		
@@ -74,7 +75,7 @@
 	const tenantOptionsDialog = ref<null | InstanceType<typeof OptionsDialog>>(null);
 	const inputValue = ref<string>('');
 	const tenantList = reactive<TenantType[]>([DEFAULT_TENANT]);
-  const store = useStore();
+    const store = useStore();
 	const tenantOptionList = reactive<OptionType[]>([{
 		value: store.userData.id!,
 		text: "私人空间"
@@ -165,6 +166,18 @@
 		uni.navigateTo({
 			url: `./UpdatePasswordPage`
 		})
+	}
+
+	/**
+	 * @description: 切换公司/个人空间
+	 * @date: 2026-06-01
+	 * @author wuwenqiang
+	 */
+	const onSwitchCompany = () => {
+		// 使用 redirectTo 跳转到 CompanyPage，替换当前页面，这样用户无法通过返回按钮回到 UserPage
+		uni.redirectTo({
+			url: '../pages/CompanyPage'
+		});
 	}
 
 	/**

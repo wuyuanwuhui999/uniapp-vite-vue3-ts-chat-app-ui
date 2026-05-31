@@ -923,7 +923,25 @@
 		// 1. 先从缓存获取用户保存的租户ID（key为 userId:tenantId）
 		const cachedTenantId = await store.getTenantIdFromStorage();
 		
-		// 2. 获取当前公司下的所有租户列表
+		// 2. 获取当前公司ID
+		const cachedCompanyId = await store.getCompanyIdFromStorage();
+		const currentCompany = store.company;
+		
+		// 如果 store 中没有公司信息但缓存中有，说明是从 CompanyPage 新选择的公司
+		if (!currentCompany && cachedCompanyId) {
+			// 需要重新获取公司列表并设置公司信息
+			try {
+				const companyRes = await getCompanyListService();
+				const foundCompany = companyRes.data?.find(item => item.id === cachedCompanyId);
+				if (foundCompany) {
+					store.setCompany(foundCompany);
+				}
+			} catch (error) {
+				console.error('获取公司信息失败:', error);
+			}
+		}
+		
+		// 3. 获取当前公司下的所有租户列表
 		if (!store.company?.id) {
 			console.error('公司ID不存在');
 			store.setTenantUser(getDefaultTenantUser());
@@ -935,7 +953,7 @@
 			const res = await getTenantListService(store.company.id);
 			const tenantList = res.data || [];
 			
-			// 3. 如果缓存中有tenantId，在租户列表中查找匹配的记录
+			// 4. 如果缓存中有tenantId，在租户列表中查找匹配的记录
 			if (cachedTenantId) {
 				const matchedTenant = tenantList.find(tenant => tenant.id === cachedTenantId);
 				if (matchedTenant) {
@@ -945,7 +963,7 @@
 				}
 			}
 			
-			// 4. 如果没有找到匹配的租户，使用默认逻辑（从缓存或接口获取租户信息）
+			// 5. 如果没有找到匹配的租户，使用默认逻辑（从缓存或接口获取租户信息）
 			await fallbackGetTenant();
 			
 		} catch (error) {
