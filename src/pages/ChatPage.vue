@@ -328,7 +328,7 @@
 	 * @description: 获取模型列表
 	 * @date: 2025-06-02 21:45
 	 */
-	getModelListService().then((res)=>{
+	getModelListService(store.company?.id??"").then((res)=>{
 		chatModelList.push(...res.data);
 		res.data.forEach((item,index)=>chatModelOption.push({value:index,text:item.modelName}));
     	activeModelIndex.value = 0;
@@ -918,7 +918,7 @@
 			});
 			return;
 		}
-		getTenantListService(store.company.id).then((res) => {
+		getTenantListService(store.company?.id??"").then((res) => {
 			tenantOptionList.length = 0;
 			tenantOptionList.push({ value: store.userData.id!, text: "私人空间" });
 			res.data.forEach((item: TenantType) => {

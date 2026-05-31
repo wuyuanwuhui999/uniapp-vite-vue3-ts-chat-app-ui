@@ -101,8 +101,8 @@ export const getChatHistoryService = (tenantId:string,pageNum:number,pageSize:nu
  * @date: 2025-05-16 00:19
  * @author wuwenqiang
  */
-export const getModelListService = ():Promise<MyAwesomeData<Array<types.ChatModelType>>> => {
-  return httpRequest.get<Array<types.ChatModelType>>(api.getModelList)
+export const getModelListService = (companyId:string):Promise<MyAwesomeData<Array<types.ChatModelType>>> => {
+  return httpRequest.get<Array<types.ChatModelType>>(`${api.getModelList}?companyId=${companyId}`)
 }
 
 /**
@@ -146,8 +146,8 @@ export const createDirectoryService = (directory:types.DirectoryInterce):Promise
  * @date: 2025-08-10 18:25
  * @author wuwenqiang
  */
-export const getTenantListService = ():Promise<MyAwesomeData<types.TenantType[]>> => {
-  return httpRequest.get<types.TenantType[]>(api.getTenantList);
+export const getTenantListService = (companyId:string):Promise<MyAwesomeData<types.TenantType[]>> => {
+  return httpRequest.get<types.TenantType[]>(`${api.getTenantList}?companyId=${companyId}`);
 }
 
 /**
