@@ -6,40 +6,42 @@
 
 <script setup lang="ts">
 import { useStore } from '../stores/useStore'
-import {getUserDataService} from '../service';
-import {httpRequest} from '../utils/HttpUtils';
+import { getUserDataService } from '../service';
+import { httpRequest } from '../utils/HttpUtils';
+
 const store = useStore()
-const token:string = uni.getStorageSync('token');
+const token: string = uni.getStorageSync('token');
+
 uni.getSystemInfo({
-  success:  (info)=> {
+  success: (info) => {
     store.setDeviceInfo(info);
   }
 });
 
-setTimeout(()=>{
-    if(token){
-        getUserDataService(token).then((res)=>{
-          store.setUserData(res.data)
-          store.setToken(res.token)
-          uni.setStorage({key:'token',data:res.token});
-          httpRequest.setToken(res.token);
-          uni.redirectTo({url: '../pages/ChatPage'})
-        }).catch((err)=>{
-          uni.redirectTo({url: '../pages/LoginPage'})
-        })
-    }else{
-        uni.redirectTo({url: '../pages/LoginPage'})
+setTimeout(() => {
+    if (token) {
+        getUserDataService(token).then((res) => {
+            store.setUserData(res.data);
+            store.setToken(res.token);
+            uni.setStorage({ key: 'token', data: res.token });
+            httpRequest.setToken(res.token);
+            // 跳转到 CompanyPage
+            uni.redirectTo({ url: '../pages/CompanyPage' });
+        }).catch((err) => {
+            uni.redirectTo({ url: '../pages/LoginPage' });
+        });
+    } else {
+        uni.redirectTo({ url: '../pages/LoginPage' });
     }
-},1000)
-
-
+}, 1000);
 </script>
 
 <style lang="less" scoped>
 @import '../theme/color.less';
 @import '../theme/size.less';
 @import '../theme/style.less';
-.page-wrapper{
+
+.page-wrapper {
     height: 100%;
     display: flex;
     align-items: center;

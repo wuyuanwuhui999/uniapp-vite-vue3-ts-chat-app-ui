@@ -165,9 +165,10 @@ export interface AppStoreStateType {
   token: string;
   platform: string;
   device: string;
-  prompt:string;
+  prompt: string;
   version: string;
   tenantUser: TenantUserType;
+  company: CompanyType | null;  // 新增：当前选中的公司
 }
 
 // 或者使用接口继承的方式
@@ -201,4 +202,17 @@ export interface PromptInterface {
   prompt: string;
   createTime?: string;
   updateTime?: string;
+}
+
+
+export interface CompanyType {
+  id: string;           // 公司ID
+  name: string;         // 公司名称
+  code: string;         // 公司编码
+  description?: string; // 公司描述
+  status: number;       // 公司状态
+  createDate: string;   // 创建时间
+  updateDate: string;   // 更新时间
+  createdBy: string;    // 创建人
+  updatedBy: string;    // 更新人
 }

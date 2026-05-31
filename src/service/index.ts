@@ -147,7 +147,7 @@ export const createDirectoryService = (directory:types.DirectoryInterce):Promise
  * @author wuwenqiang
  */
 export const getTenantListService = ():Promise<MyAwesomeData<types.TenantType[]>> => {
-  return httpRequest.get<types.TenantType[]>(api.getUserTenantList);
+  return httpRequest.get<types.TenantType[]>(api.getTenantList);
 }
 
 /**
@@ -294,3 +294,12 @@ export const getPromptService = (tenantId: string): Promise<MyAwesomeData<types.
 export const updatePromptService = (promptData: types.PromptInterface): Promise<MyAwesomeData<PromptInterface>> => {
   return httpRequest.put<types.PromptInterface>(api.updatePrompt, promptData);
 }
+
+/**
+ * @description: 获取公司列表
+ * @date: 2026-05-30
+ * @author wuwenqiang
+ */
+export const getCompanyListService = (): Promise<MyAwesomeData<types.CompanyType[]>> => {
+    return httpRequest.get<types.CompanyType[]>(api.getCompanyList);
+};

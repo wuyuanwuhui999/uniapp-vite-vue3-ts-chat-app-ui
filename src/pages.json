@@ -87,8 +87,17 @@
 				"navigationBarTitleText" : "",
 				"enablePullDownRefresh" : false
 			}
-		},{
+		},
+		{
 			"path" : "pages/MyPromptPage",
+			"style" : 
+			{
+				"navigationBarTitleText" : "",
+				"enablePullDownRefresh" : false
+			}
+		},
+		{
+			"path" : "pages/CompanyPage",
 			"style" : 
 			{
 				"navigationBarTitleText" : "",

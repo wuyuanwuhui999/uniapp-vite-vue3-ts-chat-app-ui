@@ -909,7 +909,16 @@
 	 * @author wuwenqiang
 	 */
 	const getTenantListForSwitch = () => {
-		getTenantListService().then((res) => {
+		if (!store.company?.id) {
+			console.error('公司ID不存在');
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: '请先选择公司'
+			});
+			return;
+		}
+		getTenantListService(store.company.id).then((res) => {
 			tenantOptionList.length = 0;
 			tenantOptionList.push({ value: store.userData.id!, text: "私人空间" });
 			res.data.forEach((item: TenantType) => {

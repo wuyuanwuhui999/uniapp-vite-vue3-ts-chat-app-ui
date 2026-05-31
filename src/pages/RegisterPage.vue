@@ -220,7 +220,7 @@
 					store.setToken(res.token)
 					uni.setStorage({key:'token',data:res.token});
 					httpRequest.setToken(res.token);
-					uni.redirectTo({url: '../pages/MusicIndexPage'})
+					uni.redirectTo({url: '../pages/CompanyPage'})
 					uni.showToast({
 						duration:2000,
 						position:'center',
