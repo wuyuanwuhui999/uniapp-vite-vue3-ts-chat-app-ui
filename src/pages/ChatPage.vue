@@ -80,12 +80,12 @@
 		</view>
 		<scroll-view scroll-x class="scroll-container">
 			<view class="type-wrapper">
-				<text class="type-item" :class="{'type-item-active': showThink}" @click="onSwitchThink()">深度思考</text>
-				<view  class="type-item type-item-doc" :class="{'type-item-active': type === 'document'}">
-					<text @click="onCheckType('document')">知识库</text>
-					<image class="icon-mini" @click="onSetDocument" :src="type == 'document' ? icon_setting_active : icon_setting_disabled"/>
-				</view>
-				<view class="type-item type-item-language" @click="onSwitchLang()"><text>{{ language }}</text><image class="icon-small" :src="icon_switch"/></view>
+			    <text class="type-item" :class="{'type-item-active': showThink}" @click="onSwitchThink()">深度思考</text>
+			    <view class="type-item type-item-doc" :class="{'type-item-active': type === 'document'}" @click="onSetDocument">
+			        <text>查询文档</text>
+			        <view v-if="selectedDocCount > 0" class="doc-badge">{{ selectedDocCount }}</view>
+			    </view>
+			    <view class="type-item type-item-language" @click="onSwitchLang()"><text>{{ language }}</text><image class="icon-small" :src="icon_switch"/></view>
 			</view>
 		</scroll-view>
 		
@@ -153,8 +153,8 @@
 						</radio-group>
 					</scroll-view>
 					<view class="dialog-btn-wrapper">
-						<text class="dialog-btn dialog-btn-sure" @click="onUploadSure">确定</text>
-						<text class="dialog-btn dialog-btn-cancle" @click="showDirDialog = false">取消</text>
+					    <text class="dialog-btn dialog-btn-sure" :class="{'dialog-btn-disabled': selectedDocCount === 0}" @click="onSureCheck">确定</text>
+					    <text class="dialog-btn dialog-btn-cancle" @click="onCancelCheck">取消</text>
 					</view>
 				</view>
 				<view class="create-dialog" v-if="showCreateDialog">
@@ -314,6 +314,8 @@
 		id:"public",
     	tenantId:store.tenantUser?.id??"",
 	}]);
+	const selectedDocCount = ref<number>(0);
+	const tempCheckedDocIds = reactive<string[]>([]);
 
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
@@ -853,33 +855,83 @@
 		});
 	}
 
-	/**	
-	 * @description: 选择要查询的文件夹
-	 * @date: 2025-07-12 13:03
+	/**
+	 * @description: 点击查询文档按钮
+	 * @date: 2026-09-05
 	 * @author wuwenqiang
 	 */
-	const onSetDocument = ()=>{
-		if(type.value !== 'document'){
-			type.value = 'document';
-		}else{
-			showCheckDocument.value = true;
-			getMyDocumentList().then((res)=>{
-				myDocList.length = 0;
-				myDocList.push(...res);
-			})
-		}
-	
-	}
+	const onSetDocument = () => {
+	    // 直接弹出选择文档对话框
+	    showCheckDocument.value = true;
+	    // 如果已经有选中的文档，加载时自动选中
+	    getMyDocumentList().then((res) => {
+	        myDocList.length = 0;
+	        myDocList.push(...res);
+	        // 如果之前有选中的文档，恢复选中状态
+	        if (checkedDocIds.length > 0) {
+	            myDocList.forEach((dir) => {
+	                dir.docList?.forEach((doc) => {
+	                    if (checkedDocIds.includes(doc.id)) {
+	                        doc.checked = true;
+	                    }
+	                });
+	            });
+	        }
+	        // 同步临时选中列表
+	        tempCheckedDocIds.length = 0;
+	        tempCheckedDocIds.push(...checkedDocIds);
+	    });
+	};
 
-	/**	
-	 * @description: 确定选择
-	 * @date: 2025-08-2 12:20
+
+	/**
+	 * @description: 确定选择文档
+	 * @date: 2026-09-05
 	 * @author wuwenqiang
 	 */
-	const onSureCheck = ()=>{
-		showCheckDocument.value = false;
-		getCheckedDocIds();
-	}
+	const onSureCheck = () => {
+	    // 检查是否至少选中一篇文档
+	    if (selectedDocCount.value === 0) {
+	        uni.showToast({
+	            duration: 2000,
+	            position: 'center',
+	            title: '请至少选择一篇文档'
+	        });
+	        return;
+	    }
+	    showCheckDocument.value = false;
+	    // 更新正式选中的文档ID列表
+	    checkedDocIds.length = 0;
+	    checkedDocIds.push(...tempCheckedDocIds);
+	    // 更新选中数量
+	    selectedDocCount.value = checkedDocIds.length;
+	    // 设置查询文档为激活状态
+	    type.value = 'document';
+	};
+
+	/**
+	 * @description: 取消选择文档
+	 * @date: 2026-09-05
+	 * @author wuwenqiang
+	 */
+	const onCancelCheck = () => {
+	    showCheckDocument.value = false;
+	    // 清空临时选中的文档ID
+	    tempCheckedDocIds.length = 0;
+	    // 清空正式选中的文档ID
+	    checkedDocIds.length = 0;
+	    // 重置选中数量
+	    selectedDocCount.value = 0;
+	    // 查询文档变为灰色状态（非激活）
+	    type.value = '';
+	    // 重置所有文档的选中状态
+	    myDocList.forEach((dir) => {
+	        dir.docList?.forEach((doc) => {
+	            doc.checked = false;
+	        });
+	    });
+	};
+
 
 	/**
 	 * @author: wuwenqiang
@@ -1165,14 +1217,44 @@
 		showMenu.value = false;
 	}
 
-	 /**
-     * @author: wuwenqiang
-     * @description: 选中或取消选中文档
-     * @date: 2025-11-02 14:37
-     */
-	const checkDoc = (docItem:DocumentInterface) => {
-		docItem.checked = !docItem.checked;
-	}
+	/**
+	 * @description: 选中或取消选中文档（修改版，同时更新临时列表）
+	 * @date: 2026-09-05
+	 * @author wuwenqiang
+	 */
+	const checkDoc = (docItem: DocumentInterface) => {
+	    docItem.checked = !docItem.checked;
+	    // 更新临时选中的文档ID列表
+	    updateTempCheckedDocIds();
+	    // 更新选中数量
+	    updateSelectedCount();
+	};
+	
+	/**
+	 * @description: 更新选中的文档数量
+	 * @date: 2026-09-05
+	 * @author wuwenqiang
+	 */
+	const updateSelectedCount = () => {
+	    selectedDocCount.value = tempCheckedDocIds.length;
+	};
+
+	
+	/**
+	 * @description: 更新临时选中的文档ID列表
+	 * @date: 2026-09-05
+	 * @author wuwenqiang
+	 */
+	const updateTempCheckedDocIds = () => {
+	    tempCheckedDocIds.length = 0;
+	    myDocList.forEach((dir) => {
+	        dir.docList?.forEach((doc) => {
+	            if (doc.checked) {
+	                tempCheckedDocIds.push(doc.id);
+	            }
+	        });
+	    });
+	};
 
 	const getCheckedDocIds = ()=>{
 		checkedDocIds.length = 0;
@@ -1183,9 +1265,14 @@
 		});		
 	}
 
-	const onExpandDir = (item:DirectoryCheckInterface)=>{
-		item.expand = !item.expand;
-	}
+	/**
+	 * @description: 展开/折叠目录
+	 * @date: 2026-09-05
+	 * @author wuwenqiang
+	 */
+	const onExpandDir = (item: DirectoryCheckInterface) => {
+	    item.expand = !item.expand;
+	};
 	
 	getStorageTenant()
 </script>
@@ -1358,6 +1445,23 @@
 					gap:@small-padding;
 					&.type-item-doc{
 						display: flex;
+						position: relative;
+						.doc-badge {
+							position: absolute;
+							top: -10rpx;
+							right: -10rpx;
+							min-width: 32rpx;
+							height: 32rpx;
+							background-color: @primary-color;
+							color: @white-color;
+							font-size: 20rpx;
+							border-radius: 50%;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							padding: 0 6rpx;
+							box-sizing: border-box;
+						}
 					}
 					&.type-item-language{
 						color: #000;
@@ -1489,6 +1593,11 @@
 						color: @white-color;
 						background-color: @gray-color ;
 						border: 1rpx solid @gray-color;
+						&.dialog-btn-disabled {
+							background-color: @gray-color !important;
+							color: @white-color !important;
+							border-color: @gray-color !important;
+						}
 					}
 					&.dialog-btn-cancle{
 						border:1rpx solid @gray-color;

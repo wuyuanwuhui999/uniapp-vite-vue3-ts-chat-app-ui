@@ -164,17 +164,11 @@
                             display: flex;
                             align-items: center;
                             justify-content: space-between;
-                            padding: @middle-padding;
                             border-bottom: 1rpx solid @page-background-color;
                             
                             &:last-child {
                                 border-bottom: none;
                             }
-                            
-                            &.company-item-active {
-                                background-color: @page-background-color;
-                            }
-                            
                             .company-name {
                                 font-size: @normal-font-size;
                                 font-weight: bold;
