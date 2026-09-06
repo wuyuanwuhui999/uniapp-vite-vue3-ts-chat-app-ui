@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AntV X6 部署架构图 - 圆角拐角连接线</title>
+    <link rel="stylesheet" href="https://unpkg.com/@antv/x6@1.34.11/dist/x6.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0b1a2f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        #container {
+            width: 1400px;
+            height: 1100px;
+            background-color: #0f1f33;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            position: relative;
+        }
+        #graph-container {
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+        }
+        .x6-node {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+        }
+        .x6-node .body {
+            fill: #1e3349;
+            stroke: #4c7a9c;
+            stroke-width: 2px;
+            rx: 12px;
+            ry: 12px;
+        }
+        .x6-node .label {
+            fill: #d6e6f5;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+        .x6-edge .line {
+            stroke: #6a9ec4;
+            stroke-width: 2.5px;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        .x6-edge .arrow {
+            display: none;
+        }
+        .x6-cell {
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="graph-container"></div>
+</div>
+
+<script src="https://unpkg.com/@antv/x6@1.34.11/dist/x6.js"></script>
+<script>
+    (function() {
+        const { Graph } = window.X6;
+
+        const graph = new Graph({
+            container: document.getElementById('graph-container'),
+            width: 1400,
+            height: 1100,
+            background: { color: '#0f1f33' },
+            grid: false,
+            panning: false,
+            mousewheel: false,
+            interacting: false,
+        });
+
+        // ---------- 层级配置 ----------
+        const layerConfig = [
+            { name: '接入层', nodes: ['nginx'], y: 70 },
+            { name: '服务层', nodes: ['ALB', 'EKS'], y: 260 },
+            { name: '中间层', nodes: ['kafka', 'redis', 'mq'], y: 450 },
+            { name: '数据库层', nodes: ['mysql', 'opengauss', 'pg', 'mongodb'], y: 640 },
+            { name: '资源层', nodes: ['ec2', 's3'], y: 830 },
+        ];
+
+        const nodeWidth = 90;
+        const nodeHeight = 44;
+
+        // 背景框统一宽度
+        const containerWidth = 1400;
+        const bgMargin = 40;
+        const bgWidth = containerWidth - bgMargin * 2;
+        const bgX = bgMargin;
+
+        // 存储每层节点ID列表
+        const layerNodeIds = [];
+
+        // ---------- 绘制节点和背景 ----------
+        layerConfig.forEach((layer, idx) => {
+            const { name, nodes, y } = layer;
+            const count = nodes.length;
+            const nodeIds = [];
+
+            const bgHeight = 100;
+            const bgY = y + 20;
+
+            // 层背景框
+            graph.addNode({
+                shape: 'rect',
+                x: bgX,
+                y: bgY,
+                width: bgWidth,
+                height: bgHeight,
+                attrs: {
+                    body: {
+                        fill: 'rgba(26, 45, 65, 0.55)',
+                        stroke: '#3f6b8a',
+                        strokeWidth: 1.5,
+                        strokeDasharray: '6 4',
+                        rx: 18,
+                        ry: 18,
+                    },
+                },
+                draggable: false,
+                selectable: false,
+            });
+
+            // 层名称：左对齐
+            const labelX = bgX;
+            const labelY = bgY - 32;
+            graph.addNode({
+                shape: 'rect',
+                x: labelX,
+                y: labelY,
+                width: 140,
+                height: 28,
+                attrs: {
+                    body: {
+                        fill: 'transparent',
+                        stroke: 'transparent',
+                    },
+                    label: {
+                        text: name,
+                        fill: '#b0d0ed',
+                        fontSize: 18,
+                        fontWeight: 600,
+                        letterSpacing: 1,
+                        textAnchor: 'start',
+                        dominantBaseline: 'central',
+                        x: 0,
+                    },
+                },
+                draggable: false,
+                selectable: false,
+            });
+
+            // 节点：space-around 分布
+            const totalGap = bgWidth - count * nodeWidth;
+            const gap = totalGap / (count + 1);
+
+            nodes.forEach((nodeLabel, i) => {
+                const xPos = bgX + gap + i * (nodeWidth + gap);
+                const yPos = bgY + (bgHeight - nodeHeight) / 2;
+
+                const node = graph.addNode({
+                    shape: 'rect',
+                    x: xPos,
+                    y: yPos,
+                    width: nodeWidth,
+                    height: nodeHeight,
+                    attrs: {
+                        body: {
+                            fill: '#1e3349',
+                            stroke: '#4c7a9c',
+                            strokeWidth: 2,
+                            rx: 12,
+                            ry: 12,
+                        },
+                        label: {
+                            text: nodeLabel,
+                            fill: '#d6e6f5',
+                            fontSize: 15,
+                            fontWeight: 500,
+                            textAnchor: 'middle',
+                            dominantBaseline: 'central',
+                        },
+                    },
+                    draggable: false,
+                    selectable: false,
+                });
+                nodeIds.push(node.id);
+            });
+
+            layerNodeIds.push(nodeIds);
+        });
+
+        // ---------- 辅助函数 ----------
+        const getNodeBottomCenter = (nodeId) => {
+            const node = graph.getCellById(nodeId);
+            if (!node) return { x: 0, y: 0 };
+            const bbox = node.getBBox();
+            return { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height };
+        };
+
+        const getNodeTopCenter = (nodeId) => {
+            const node = graph.getCellById(nodeId);
+            if (!node) return { x: 0, y: 0 };
+            const bbox = node.getBBox();
+            return { x: bbox.x + bbox.width / 2, y: bbox.y };
+        };
+
+        // ---------- 阶梯连线：圆角拐角 (使用 connector 的 rounded 属性) ----------
+        const dotAnimations = [];
+
+        for (let i = 0; i < layerNodeIds.length - 1; i++) {
+            const upperNodes = layerNodeIds[i];
+            const lowerNodes = layerNodeIds[i + 1];
+
+            // 计算汇集点X (上层节点平均X)
+            let sumX = 0;
+            upperNodes.forEach(id => {
+                const pos = getNodeBottomCenter(id);
+                sumX += pos.x;
+            });
+            const avgX = sumX / upperNodes.length;
+
+            // 获取上层背景框底部
+            const upperLayer = layerConfig[i];
+            const upperBgY = upperLayer.y + 20;
+            const upperBgHeight = 100;
+            const upperBgBottom = upperBgY + upperBgHeight;
+
+            // 获取下层背景框顶部
+            const lowerLayer = layerConfig[i + 1];
+            const lowerBgY = lowerLayer.y + 20;
+
+            // ---- 交汇点：上层背景框下方 20px ----
+            const convergeY = upperBgBottom + 20;
+            const convergeX = avgX;
+
+            // ---- 分叉点：下层背景框上方 20px ----
+            const trunkEndY = lowerBgY - 20;
+            const divergeX = avgX;
+
+            // ---- 1. 上层节点 -> 汇集点 (圆角拐角) ----
+            upperNodes.forEach(upperId => {
+                const sourcePos = getNodeBottomCenter(upperId);
+                graph.addEdge({
+                    source: { x: sourcePos.x, y: sourcePos.y },
+                    target: { x: convergeX, y: convergeY },
+                    vertices: [
+                        { x: sourcePos.x, y: convergeY }
+                    ],
+                    connector: {
+                        name: 'rounded',
+                        args: {
+                            radius: 8,  // 圆角半径
+                        },
+                    },
+                    attrs: {
+                        line: {
+                            stroke: '#6a9ec4',
+                            strokeWidth: 2.5,
+                            strokeLinejoin: 'round',
+                            strokeLinecap: 'round',
+                        },
+                    },
+                    defaultLabel: false,
+                    marker: null,
+                });
+            });
+
+            // ---- 2. 干线: 汇集点 -> 分叉点 (垂直直线，无需圆角) ----
+            graph.addEdge({
+                source: { x: convergeX, y: convergeY },
+                target: { x: divergeX, y: trunkEndY },
+                connector: {
+                    name: 'rounded',
+                    args: {
+                        radius: 8,
+                    },
+                },
+                attrs: {
+                    line: {
+                        stroke: '#6a9ec4',
+                        strokeWidth: 2.5,
+                        strokeLinejoin: 'round',
+                        strokeLinecap: 'round',
+                    },
+                },
+                defaultLabel: false,
+                marker: null,
+            });
+
+            // ---- 3. 分叉点 -> 下层节点 (圆角拐角) ----
+            lowerNodes.forEach(lowerId => {
+                const targetPos = getNodeTopCenter(lowerId);
+                graph.addEdge({
+                    source: { x: divergeX, y: trunkEndY },
+                    target: { x: targetPos.x, y: targetPos.y },
+                    vertices: [
+                        { x: targetPos.x, y: trunkEndY }
+                    ],
+                    connector: {
+                        name: 'rounded',
+                        args: {
+                            radius: 8,
+                        },
+                    },
+                    attrs: {
+                        line: {
+                            stroke: '#6a9ec4',
+                            strokeWidth: 2.5,
+                            strokeLinejoin: 'round',
+                            strokeLinecap: 'round',
+                        },
+                    },
+                    defaultLabel: false,
+                    marker: null,
+                });
+            });
+
+            // ---- 4. 动画小圆点 (路径点保持不变) ----
+            upperNodes.forEach(upperId => {
+                const sourcePos = getNodeBottomCenter(upperId);
+                lowerNodes.forEach(lowerId => {
+                    const targetPos = getNodeTopCenter(lowerId);
+
+                    const pathPoints = [
+                        { x: sourcePos.x, y: sourcePos.y },
+                        { x: sourcePos.x, y: convergeY },
+                        { x: convergeX, y: convergeY },
+                        { x: divergeX, y: trunkEndY },
+                        { x: targetPos.x, y: trunkEndY },
+                        { x: targetPos.x, y: targetPos.y }
+                    ];
+
+                    const segLens = [];
+                    let totalLen = 0;
+                    for (let k = 0; k < pathPoints.length - 1; k++) {
+                        const dx = pathPoints[k+1].x - pathPoints[k].x;
+                        const dy = pathPoints[k+1].y - pathPoints[k].y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        segLens.push(len);
+                        totalLen += len;
+                    }
+
+                    const dotNode = graph.addNode({
+                        shape: 'circle',
+                        x: sourcePos.x - 6,
+                        y: sourcePos.y - 6,
+                        width: 12,
+                        height: 12,
+                        attrs: {
+                            body: {
+                                fill: '#9bc9ff',
+                                stroke: '#c0e0ff',
+                                strokeWidth: 1.5,
+                            },
+                        },
+                        draggable: false,
+                        selectable: false,
+                    });
+
+                    dotAnimations.push({
+                        dotId: dotNode.id,
+                        pathPoints: pathPoints,
+                        segLens: segLens,
+                        totalLen: totalLen,
+                        progress: 0,
+                        speed: 0.003 + Math.random() * 0.004,
+                    });
+                });
+            });
+        }
+
+        // ---------- 动画循环 ----------
+        function animateDots() {
+            dotAnimations.forEach(item => {
+                const dot = graph.getCellById(item.dotId);
+                if (!dot) return;
+
+                item.progress += item.speed;
+                if (item.progress > 1) {
+                    item.progress = 0;
+                }
+
+                const targetDist = item.progress * item.totalLen;
+                let accumulated = 0;
+                let pos = { x: item.pathPoints[0].x, y: item.pathPoints[0].y };
+
+                for (let i = 0; i < item.segLens.length; i++) {
+                    const segLen = item.segLens[i];
+                    if (targetDist <= accumulated + segLen) {
+                        const t = (targetDist - accumulated) / segLen;
+                        const p1 = item.pathPoints[i];
+                        const p2 = item.pathPoints[i+1];
+                        pos.x = p1.x + (p2.x - p1.x) * t;
+                        pos.y = p1.y + (p2.y - p1.y) * t;
+                        break;
+                    }
+                    accumulated += segLen;
+                    if (i === item.segLens.length - 1) {
+                        const last = item.pathPoints[item.pathPoints.length - 1];
+                        pos.x = last.x;
+                        pos.y = last.y;
+                    }
+                }
+
+                const bbox = dot.getBBox();
+                dot.setPosition(pos.x - bbox.width / 2, pos.y - bbox.height / 2);
+            });
+
+            requestAnimationFrame(animateDots);
+        }
+
+        animateDots();
+
+        // 适应视图
+        graph.zoomToFit({ padding: 20 });
+
+        console.log('架构图渲染完成: 连接线拐角圆角 (radius: 8)');
+    })();
+</script>
+</body>
+</html>
