@@ -85,6 +85,7 @@ export interface PayloadInterface {
   modelId: string;
   chatId:string; // 替换为实际聊天ID
   tenantId:string;
+  companyId:string;
   type: string;
   docIds?:string[];// 文档列表
   prompt: string;// 用户提示词

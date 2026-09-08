@@ -360,6 +360,7 @@
 				modelId: chatModelList[activeModelIndex.value].id,
 				chatId, // 替换为实际聊天ID
 				type:type.value,
+				companyId:store.company?.id??"",
 				systemPrompt:store.prompt,
 				docIds:type.value == 'document' ? checkedDocIds : [],
 				prompt: inputValue.value.trim(),
