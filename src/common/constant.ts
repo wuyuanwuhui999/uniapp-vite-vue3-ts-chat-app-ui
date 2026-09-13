@@ -1,7 +1,7 @@
 import type{ TenantType, TenantUserType} from "../types";
 
 // export const HOST:string = 'http://254a2y1767.qicp.vip';
-export const HOST:string = 'http://127.0.0.1:3000';
+export const HOST:string = 'http://127.0.0.1:4000';
 
 export const EMAIL_REG:RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;// 邮箱正则表达式
 
@@ -40,3 +40,5 @@ export const DEFAULT_TENANT_USER:TenantUserType = {
 }
 
 export const DEFAULT_PROMPT = "你叫小吴同学，是一个无所不能的AI助手，上知天文下知地理，请用小吴同学的身份回答问题。"
+
+export const PRIMARY_COLOR = '#ffae00';

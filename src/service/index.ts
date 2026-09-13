@@ -278,6 +278,40 @@ export const getDocListByDirIdService = (tenantId:string,directoryId:string):Pro
 }
 
 /**
+ * @description: 上传文档
+ * @date: 2026-09-13
+ * @author wuwenqiang
+ */
+export const uploadDocService = (filePath: string, fileName: string, tenantId: string, directoryId: string): Promise<MyAwesomeData<number>> => {
+  return new Promise((resolve, reject) => {
+    uni.uploadFile({
+      url: `${HOST}${api.uploadDoc}/${tenantId}/${directoryId}`,
+      filePath,
+      name: 'file',
+      formData: { filename: fileName },
+      header: {
+        'Authorization': `Bearer ${httpRequest.getToken()}`
+      },
+      success: (res) => {
+        try {
+          const data: MyAwesomeData<number> = JSON.parse(res.data);
+          if (data.status === 'SUCCESS') {
+            resolve(data);
+          } else {
+            reject(data);
+          }
+        } catch (e) {
+          reject({ msg: '解析响应失败' });
+        }
+      },
+      fail: (err) => {
+        reject({ msg: err.errMsg || '上传失败' });
+      }
+    });
+  });
+}
+
+/**
  * @description: 获取提示词
  * @date: 2026-04-14
  * @author wuwenqiang

@@ -114,12 +114,14 @@ export interface OptionType {
 
 // 文档的目录
 export interface DirectoryInterce {
-  id?:string;// 目录id
-  userId?:string;// 用户id
-  directory:string;// 目录名称
+  id?: string;// 目录id
+  userId?: string;// 用户id
+  directory: string;// 目录名称
   tenantId: string;// 租户id
-  createTime?:string;// 创建时间
-  updateTime?:string;// 更新时间
+  createTime?: string;// 创建时间
+  updateTime?: string;// 更新时间
+  expand?: boolean;// 是否展开
+  docList?: DocumentInterface[];// 目录下的文档列表
 }
 
 export interface DirectoryCheckInterface{

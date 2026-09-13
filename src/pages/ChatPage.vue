@@ -158,51 +158,95 @@
 					</view>
 				</view>
 				<view class="create-dialog" v-if="showCreateDialog">
-					<view class="create-mask" @click="showCreateDialog = false"></view>
-					<view class="create-wrapper">
-						<view class="create-form">
-							<text>文件夹名称</text>
-							<input class="directory-input" v-model="directoryName">
-						</view>
-						<view class="create-btn-wrapper">
-							<text class="create-btn create-sure" @click="onSureCreate">确定</text>
-							<text class="create-btn create-cancle" @click="showCreateDialog = false">取消</text>
-						</view>
-					</view>
-
+				  <view class="create-mask" @click="onCloseCreateDialog"></view>
+				  <view class="create-wrapper">
+				    <view class="create-title">创建文件夹</view>
+				    <view class="create-form">
+				      <input class="directory-input" v-model="directoryName" placeholder="请输入文件夹名称" />
+				    </view>
+				    <view class="create-btn-wrapper">
+				      <text class="create-btn create-sure" :class="{'create-btn-disabled': !directoryName.trim()}" @click="onCreateDirectorySure">确定</text>
+				      <text class="create-btn create-cancle" @click="onCloseCreateDialog">取消</text>
+				    </view>
+				  </view>
 				</view>
 			</template>
 		</DialogComponent>
+		
+		<DialogComponent v-if="showUploadDialog" :z-index="3" @onClose="onCloseUploadDialog">
+		  <template #header>
+		    <text class="dialog-header">上传文档</text>
+		  </template>
+		  <template #content>
+		    <view class="directory-wrapper">
+		      <scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
+		        <radio-group class="directory-list module-block" @change="onSelectUploadDirectory">
+		          <label class="directory-item" v-for="item in directoryList" :key="item.id">
+		            <view class="directory-name-wrapper">
+		              <text class="directory-name">{{ item.directory }}</text>
+		            </view>
+		            <radio :checked="uploadDirectoryId === item.id" :color="'#ffae00'" :value="item.id"></radio>
+		          </label>
+		        </radio-group>
+		      </scroll-view>
+		      <view class="dialog-btn-wrapper">
+				  <text
+				    class="dialog-btn dialog-btn-sure"
+				    :class="{'dialog-btn-active': !!uploadDirectoryId, 'dialog-btn-disabled': !uploadDirectoryId}"
+				    @click="onUploadSure"
+				  >确定</text>
+		        <text class="dialog-btn dialog-btn-cancle" @click="onCloseUploadDialog">取消</text>
+		      </view>
+		    </view>
+		  </template>
+		</DialogComponent>
 
-		<DialogComponent v-if="showCheckDocument" @onClose="showCheckDocument = false">
-			<template #header>
-				<text class="dialog-header">知识库</text>
-			</template>
-			<template #content>
-				<view class="directory-wrapper">
-					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-						<view class="directory-list module-block">
-							<view class="directory-item" v-for="item in myDocList" :key="item.directoryName">
-								<view class="directory-info"  @click="onExpandDir(item)">
-									<text class="directory-name" @click="">{{ item.directoryName }}</text>
-									<image class="icon-mini" :class="item.expand ? 'icon-rotate': '' " :src="icon_arrow"></image>
-								</view>
-								<view class="doc-wrapper" v-if="item.expand && item.docList?.length">
-									<view class="doc-item" v-for="value in item.docList">
-										<text class="doc-name">{{ value.name }}</text>
-										<radio :checked="value.checked" @click="checkDoc(value)" :value="value.id"></radio>
-									</view>
-								</view>
-							</view>
-
-						</view>
-					</scroll-view>
-					<view class="dialog-btn-wrapper">
-						<text class="dialog-btn dialog-btn-sure" @click="onSureCheck">确定</text>
-						<text class="dialog-btn dialog-btn-cancle" @click="showCheckDocument = false">取消</text>
-					</view>
-				</view>
-			</template>
+		<!-- ChatPage.vue - 选择文档弹窗 -->
+		<DialogComponent v-if="showCheckDocument" :show-close="false" @onClose="onCloseCheckDocument">
+		  <template #header>
+		    <view class="dialog-header-wrapper">
+		      <image :src="icon_refresh" class="icon-small icon-refresh" @click="onRefreshDirectory" />
+		      <text class="dialog-header">选择文档</text>
+		      <view class="header-right-icons">
+		        <image :src="icon_create_directory" class="icon-small icon-header" @click="onShowCreateDirectory" />
+		        <image :src="icon_upload" class="icon-small icon-header" @click="onShowUpload" />
+		      </view>
+		    </view>
+		  </template>
+		  <template #content>
+		    <view class="directory-wrapper">
+		      <scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
+		        <view class="directory-list module-block">
+		          <view class="directory-item directory-item-select" v-for="item in directoryList" :key="item.id">
+		            <!-- 目录名称 + 展开箭头 -->
+		            <view class="directory-info" @click="onToggleDirectory(item)">
+		              <text class="directory-name">{{ item.directory }}</text>
+		              <image class="icon-mini icon-arrow" :class="item.expand ? 'icon-rotate' : ''" :src="icon_arrow"></image>
+		            </view>
+		            <view class="doc-wrapper" v-if="item.expand && item.docList?.length">
+		              <view class="doc-item" v-for="doc in item.docList" :key="doc.id">
+		                <text class="doc-name">{{ doc.name }}</text>
+		                <checkbox
+		                  :checked="doc.checked"
+		                  :value="doc.id"
+		                  :color="PRIMARY_COLOR"
+		                  @click="checkDoc(doc)"
+		                />
+		              </view>
+		            </view>
+		          </view>
+		        </view>
+		      </scroll-view>
+		      <view class="dialog-btn-wrapper">
+		        <text
+		          class="dialog-btn dialog-btn-sure"
+		          :class="{'dialog-btn-active': selectedDocCount > 0, 'dialog-btn-disabled': selectedDocCount === 0}"
+		          @click="onSureCheck"
+		        >确定</text>
+		        <text class="dialog-btn dialog-btn-cancle" @click="onCancelCheck">取消</text>
+		      </view>
+		    </view>
+		  </template>
 		</DialogComponent>
 	</view>
 </template>
@@ -223,6 +267,9 @@
 	import icon_setting_active from "../../static/icon_setting_active.png";
 	import icon_setting_disabled from "../../static/icon_setting_disabled.png";
 	import icon_arrow from "../../static/icon_arrow.png";
+	import icon_refresh from '../../static/icon_refresh.png';
+	import icon_create_directory from '../../static/icon_create_directory.png';
+	import icon_upload from '../../static/icon_upload.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
     import type {
       OptionType,
@@ -244,7 +291,7 @@
     } from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
-    import {HOST, PAGE_SIZE, DEFAULT_TENANT_USER} from '../common/constant';
+    import {HOST, PAGE_SIZE, DEFAULT_TENANT_USER,PRIMARY_COLOR} from '../common/constant';
 	import api from '@/api';
     import {
       getChatHistoryService,
@@ -255,7 +302,8 @@
       createDirectoryService,
       getTenantUserService,
       getPromptService,
-      getTenantListService
+      getTenantListService,
+	  getDocListByDirIdService
     } from "../service";
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
@@ -305,8 +353,6 @@
 	const directoryId = ref<string>("default");
 	const mDirectoryId = ref<string>("default");// 待确定选择的文件夹
 	const showDirDialog = ref<boolean>(false);// 实现上传文档的目录
-	const showCreateDialog = ref<boolean>(false);// 创建文件夹弹窗
-	const directoryName = ref<string>("");// 文件夹名称
 	const showCheckDocument = ref<boolean>(false);
 	const promptData = ref<PromptInterface | null>(null); // 存储提示词对象
 	const directoryList = reactive<DirectoryInterce[]>([{
@@ -316,7 +362,11 @@
 	}]);
 	const selectedDocCount = ref<number>(0);
 	const tempCheckedDocIds = reactive<string[]>([]);
-
+	const showCreateDialog = ref<boolean>(false);// 创建文件夹弹窗
+	const directoryName = ref<string>("");// 文件夹名称
+	const showUploadDialog = ref<boolean>(false);// 上传文档弹窗
+	const uploadDirectoryId = ref<string>("");// 上传选中的目录id
+	
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
       'txt': 'text/plain',
@@ -747,143 +797,261 @@
 	}
 
 	const onSelectDirectory = (event:Event)=>{
-    directoryId.value = event.detail.value;
-  }
+		directoryId.value = event.detail.value;
+	}
 
-  const onSelectDoc = (event:Event)=>{
-    mDirectoryId.value = event.detail.value;
-  }
-
-	const onUploadSure = ()=>{
-		uni.chooseFile({
-			count: 9,
-			type: 'file',
-			extension: supportedExtensions,
-			success: async (res: { tempFiles: UploadFile[] }) => {
-			// 过滤出符合类型的文件
-			const validFiles = res.tempFiles.filter(file => {
-				const ext = file.name.split('.').pop()?.toLowerCase() as FileType | undefined;
-				return ext && supportedExtensions.includes(ext);
-			});
-
-			if (validFiles.length === 0) {
-				uni.showToast({
-				icon: 'none',
-				title: '未选择有效的txt或pdf文件',
-				duration: 2000
-				});
-				return;
-			}
-
-			// 显示加载中
-			uni.showLoading({
-				title: '上传中...',
-				mask: true
-			});
-
-			try {
-				uni.addInterceptor('uploadFile', {
-					invoke(options) {
-						options.header = {
-							...options.header,
-							'Authorization': `Bearer ${store.token}`
-						};
-					}
-				});
-				// 使用Promise.all并行上传所有文件
-				const uploadPromises = validFiles.map(file => {
-					return new Promise<void>((resolve, reject) => {
-						uni.uploadFile({
-						url: `${HOST}${api.uploadDoc}/${store.tenantUser.tenantId}/${directoryId.value}`, // 替换为你的上传接口URL
-						filePath: file.path,
-						name: 'file',
-						formData: {
-							filename: file.name
-						},
-						success: (uploadRes) => {
-							try {
-							const data: UploadResponse = JSON.parse(uploadRes.data);
-							if (data.status !== "SUCCESS") {
-								reject(new Error(data.message || '上传失败'));
-							} else {
-								uni.showToast({
-									duration: 2000,
-									position: 'center',
-									title: '文件上传成功'
-								});
-								resolve();
-							}
-							} catch (e) {
-								reject(new Error('解析响应数据失败'));
-							}
-						},
-						fail: (err) => {
-							reject(new Error(err.errMsg || '上传请求失败'));
-						}
-						});
-					});
-				});
-
-				// 等待所有文件上传完成
-				await Promise.all(uploadPromises);
-				
-				// 上传成功提示
-				uni.showToast({
-					title: `成功上传${validFiles.length}个文件`,
-					icon: 'success',
-					duration: 2000
-				});
-				showDirDialog.value = false;
-			} catch (error) {
-				uni.showToast({
-					title: error instanceof Error ? error.message : '上传过程中出错',
-					icon: 'none',
-					duration: 2000
-				});
-			} finally {
-				showMenu.value = false;
-				uni.hideLoading();
-			}
-			},
-			fail: (err) => {
-				uni.showToast({
-					duration: 2000,
-					position: 'center',
-					title: "上传文档失败",
-					icon: 'none'
-				});
-			}
-		});
+	const onSelectDoc = (event:Event)=>{
+		mDirectoryId.value = event.detail.value;
 	}
 
 	/**
-	 * @description: 点击查询文档按钮
-	 * @date: 2026-09-05
+	 * @description: 点击查询文档按钮，打开选择文档弹窗
+	 * @date: 2026-09-13
 	 * @author wuwenqiang
 	 */
 	const onSetDocument = () => {
-	    // 直接弹出选择文档对话框
-	    showCheckDocument.value = true;
-	    // 如果已经有选中的文档，加载时自动选中
-	    getMyDocumentList().then((res) => {
-	        myDocList.length = 0;
-	        myDocList.push(...res);
-	        // 如果之前有选中的文档，恢复选中状态
-	        if (checkedDocIds.length > 0) {
-	            myDocList.forEach((dir) => {
-	                dir.docList?.forEach((doc) => {
-	                    if (checkedDocIds.includes(doc.id)) {
-	                        doc.checked = true;
-	                    }
-	                });
-	            });
-	        }
-	        // 同步临时选中列表
-	        tempCheckedDocIds.length = 0;
-	        tempCheckedDocIds.push(...checkedDocIds);
-	    });
+	  showCheckDocument.value = true;
+	  loadDirectoryList();
 	};
 
+	/**
+	 * @description: 加载文档目录列表
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const loadDirectoryList = () => {
+	  uni.showLoading({ title: '加载中...', mask: true });
+	  getDirectoryListService(store.tenantUser?.tenantId ?? "").then((res) => {
+	    directoryList.length = 0;
+	    res.data.forEach((item) => {
+	      directoryList.push({
+	        ...item,
+	        expand: false,
+	        docList: []
+	      });
+	    });
+	  }).catch((err) => {
+	    console.error('加载目录列表失败:', err);
+	  }).finally(() => {
+	    uni.hideLoading();
+	  });
+	};
+	
+	/**
+	 * @description: 刷新目录列表
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onRefreshDirectory = () => {
+	  loadDirectoryList();
+	  uni.showToast({
+	    duration: 2000,
+	    position: 'center',
+	    title: '刷新成功'
+	  });
+	};
+	
+	/**
+	 * @description: 点击目录名称，展开/折叠并加载文档列表
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onToggleDirectory = (item: DirectoryCheckInterface) => {
+	  if (item.expand) {
+	    // 已展开，折叠
+	    item.expand = false;
+	    return;
+	  }
+	  item.expand = true;
+	  // 如果已经加载过文档列表，不再重复请求
+	  if (item.docList && item.docList.length > 0) {
+	    return;
+	  }
+	  uni.showLoading({ title: '加载中...', mask: true });
+	  getDocListByDirIdService(store.tenantUser?.tenantId ?? "", item.id!).then((res) => {
+	    item.docList = res.data.map((doc) => ({
+	      ...doc,
+	      checked: checkedDocIds.includes(doc.id)
+	    }));
+	  }).catch((err) => {
+	    console.error('加载文档列表失败:', err);
+	  }).finally(() => {
+	    uni.hideLoading();
+	  });
+	};
+	
+	/**
+	 * @description: 打开创建文件夹对话框
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onShowCreateDirectory = () => {
+	  directoryName.value = "";
+	  showCreateDialog.value = true;
+	};
+	
+	/**
+	 * @description: 关闭创建文件夹对话框
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onCloseCreateDialog = () => {
+	  showCreateDialog.value = false;
+	};
+	
+	/**
+	 * @description: 确定创建文件夹
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onCreateDirectorySure = () => {
+	  if (!directoryName.value.trim()) return;
+	  if (directoryList.find((item) => item.directory === directoryName.value.trim())) {
+	    uni.showToast({
+	      duration: 2000,
+	      position: 'center',
+	      title: '文件夹名称已存在'
+	    });
+	    return;
+	  }
+	  uni.showLoading({ title: '创建中...', mask: true });
+	  createDirectoryService({
+	    directory: directoryName.value.trim(),
+	    tenantId: store.tenantUser?.tenantId ?? ""
+	  }).then((res) => {
+	    if (res.data) {
+	      uni.showToast({
+	        duration: 2000,
+	        position: 'center',
+	        title: '创建文件夹成功'
+	      });
+	      showCreateDialog.value = false;
+	      // 刷新目录列表
+	      loadDirectoryList();
+	    } else {
+	      uni.showToast({
+	        duration: 2000,
+	        position: 'center',
+	        title: '创建文件夹失败'
+	      });
+	    }
+	  }).catch((err) => {
+	    uni.showToast({
+	      duration: 2000,
+	      position: 'center',
+	      title: err.msg || '创建失败'
+	    });
+	  }).finally(() => {
+	    uni.hideLoading();
+	  });
+	};
+	
+	/**
+	 * @description: 打开上传文档对话框
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onShowUpload = () => {
+	  uploadDirectoryId.value = "";
+	  showUploadDialog.value = true;
+	  // 确保目录列表已加载
+	  if (directoryList.length === 0) {
+	    loadDirectoryList();
+	  }
+	};
+	
+	/**
+	 * @description: 关闭上传文档对话框
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onCloseUploadDialog = () => {
+	  showUploadDialog.value = false;
+	};
+	
+	/**
+	 * @description: 选择上传目录
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onSelectUploadDirectory = (event: any) => {
+	  uploadDirectoryId.value = event.detail.value;
+	};
+	
+	/**
+	 * @description: 关闭选择文档弹窗
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onCloseCheckDocument = () => {
+	  showCheckDocument.value = false;
+	  tempCheckedDocIds.length = 0;
+	};
+	
+	/**
+	 * @description: 上传文档确定
+	 * @date: 2026-09-13
+	 * @author wuwenqiang
+	 */
+	const onUploadSure = () => {
+	  if (!uploadDirectoryId.value) return;
+	  const supportedExtensions = ['txt', 'pdf', 'doc', 'docx'];
+	  uni.chooseFile({
+	    count: 9,
+	    type: 'file',
+	    extension: supportedExtensions,
+	    success: async (res: { tempFiles: UploadFile[] }) => {
+	      const validFiles = res.tempFiles.filter(file => {
+	        const ext = file.name.split('.').pop()?.toLowerCase();
+	        return ext && supportedExtensions.includes(ext);
+	      });
+	      if (validFiles.length === 0) {
+	        uni.showToast({
+	          icon: 'none',
+	          title: '未选择有效的txt、pdf或word文件',
+	          duration: 2000
+	        });
+	        return;
+	      }
+	      uni.showLoading({ title: '上传中...', mask: true });
+	      try {
+	        const uploadPromises = validFiles.map(file => {
+	          return uploadDocService(
+	            file.path,
+	            file.name,
+	            store.tenantUser?.tenantId ?? "",
+	            uploadDirectoryId.value
+	          );
+	        });
+	        await Promise.all(uploadPromises);
+	        uni.showToast({
+	          title: `成功上传${validFiles.length}个文件`,
+	          icon: 'success',
+	          duration: 2000
+	        });
+	        showUploadDialog.value = false;
+	        // 刷新目录列表
+	        loadDirectoryList();
+	      } catch (error) {
+	        uni.showToast({
+	          title: error instanceof Error ? error.message : '上传过程中出错',
+	          icon: 'none',
+	          duration: 2000
+	        });
+	      } finally {
+	        uni.hideLoading();
+	      }
+	    },
+	    fail: () => {
+	      uni.showToast({
+	        duration: 2000,
+	        position: 'center',
+	        title: "选择文件失败",
+	        icon: 'none'
+	      });
+	    }
+	  });
+	};
 
 	/**
 	 * @description: 确定选择文档
@@ -1219,16 +1387,14 @@
 	}
 
 	/**
-	 * @description: 选中或取消选中文档（修改版，同时更新临时列表）
+	 * @description: 选中或取消选中文档
 	 * @date: 2026-09-05
 	 * @author wuwenqiang
 	 */
 	const checkDoc = (docItem: DocumentInterface) => {
-	    docItem.checked = !docItem.checked;
-	    // 更新临时选中的文档ID列表
-	    updateTempCheckedDocIds();
-	    // 更新选中数量
-	    updateSelectedCount();
+	  docItem.checked = !docItem.checked;
+	  updateTempCheckedDocIds();
+	  updateSelectedCount();
 	};
 	
 	/**
@@ -1237,24 +1403,23 @@
 	 * @author wuwenqiang
 	 */
 	const updateSelectedCount = () => {
-	    selectedDocCount.value = tempCheckedDocIds.length;
+	  selectedDocCount.value = tempCheckedDocIds.length;
 	};
 
-	
 	/**
 	 * @description: 更新临时选中的文档ID列表
 	 * @date: 2026-09-05
 	 * @author wuwenqiang
 	 */
 	const updateTempCheckedDocIds = () => {
-	    tempCheckedDocIds.length = 0;
-	    myDocList.forEach((dir) => {
-	        dir.docList?.forEach((doc) => {
-	            if (doc.checked) {
-	                tempCheckedDocIds.push(doc.id);
-	            }
-	        });
+	  tempCheckedDocIds.length = 0;
+	  directoryList.forEach((dir) => {
+	    dir.docList?.forEach((doc) => {
+	      if (doc.checked) {
+	        tempCheckedDocIds.push(doc.id);
+	      }
 	    });
+	  });
 	};
 
 	const getCheckedDocIds = ()=>{
@@ -1531,10 +1696,13 @@
           			margin: @middle-padding;
 					.directory-item{
 						display: flex;
-						flex-direction: column;
+						justify-content: space-between;   // 关键：左右两端对齐
 						align-items: center;
 						padding: @middle-padding;
             			border-bottom: 1rpx solid @gray-color;
+						&.directory-item-select{
+							flex-direction: column;
+						}
 						&:first-child{
 							padding-top: 0;
 						}
@@ -1552,6 +1720,7 @@
 							text-overflow: ellipsis;
 							white-space: nowrap;
 							overflow: hidden;
+							flex: 1;
 						}
 						.icon-mini{
 							opacity: 0.5;
@@ -1594,6 +1763,10 @@
 						color: @white-color;
 						background-color: @gray-color ;
 						border: 1rpx solid @gray-color;
+						&.dialog-btn-active {
+						    background-color: @primary-color !important;
+						    border-color: @primary-color !important;
+						}
 						&.dialog-btn-disabled {
 							background-color: @gray-color !important;
 							color: @white-color !important;
@@ -1773,6 +1946,57 @@
 				}
 				
 			}
+		}
+				
+		.dialog-header-wrapper {
+		  display: flex;
+		  align-items: center;
+		  justify-content: space-between;
+		  width: 100%;
+		  padding: 0 @middle-padding;
+		  box-sizing: border-box;
+		
+		  .icon-refresh {
+		    opacity: 0.5;
+		    flex-shrink: 0;
+		  }
+		  .dialog-header {
+		    flex: 1;
+		    text-align: center;
+		    font-weight: bold;
+		  }
+		  .header-right-icons {
+		    display: flex;
+		    gap: @middle-padding;
+		    flex-shrink: 0;
+		    .icon-header {
+		      opacity: 0.5;
+		    }
+		  }
+		}
+		
+		// 目录箭头旋转
+		.icon-arrow {
+		  transition: transform 0.2s;
+		  &.icon-rotate {
+		    transform: rotate(90deg);
+		  }
+		}
+		
+		// 创建对话框
+		.create-dialog {
+		  .create-title {
+		    text-align: center;
+		    font-weight: bold;
+		    padding: @middle-padding;
+		    border-bottom: 1rpx solid @gray-color;
+		    width: 100%;
+		    box-sizing: border-box;
+		  }
+		  .create-btn-disabled {
+		    color: @gray-color !important;
+		    pointer-events: none;
+		  }
 		}
 	}
 </style>
