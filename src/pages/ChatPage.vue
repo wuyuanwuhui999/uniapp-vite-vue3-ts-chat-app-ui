@@ -81,10 +81,12 @@
 		<scroll-view scroll-x class="scroll-container">
 			<view class="type-wrapper">
 			    <text class="type-item" :class="{'type-item-active': showThink}" @click="onSwitchThink()">深度思考</text>
+			    <text class="type-item" :class="{'type-item-active': promptId !== ''}" @click="onShowPromptDialog()">提示词</text>
 			    <view class="type-item type-item-doc" :class="{'type-item-active': type === 'document'}" @click="onSetDocument">
 			        <text>查询文档</text>
 			        <view v-if="selectedDocCount > 0" class="doc-badge">{{ selectedDocCount }}</view>
 			    </view>
+			    <text class="type-item" :class="{'type-item-active': useTool}" @click="onSwitchTool()">使用工具</text>
 			    <view class="type-item type-item-language" @click="onSwitchLang()"><text>{{ language }}</text><image class="icon-small" :src="icon_switch"/></view>
 			</view>
 		</scroll-view>
@@ -248,6 +250,51 @@
 		    </view>
 		  </template>
 		</DialogComponent>
+
+		<!-- 提示词弹窗 -->
+		<DialogComponent v-if="showPromptDialog" :show-close="false" @onClose="onCancelPrompt">
+			<template #header>
+				<view class="dialog-header-wrapper">
+					<image :src="icon_refresh" class="icon-small icon-refresh" @click="onRefreshPrompt" />
+					<text class="dialog-header">提示词</text>
+					<view class="header-right-icons">
+						<image :src="icon_add" class="icon-small icon-header" @click="onAddPrompt" />
+					</view>
+				</view>
+			</template>
+			<template #content>
+				<view class="prompt-dialog-wrapper">
+					<view class="prompt-search">
+						<input class="prompt-search-input" v-model="promptKeyword" @input="onPromptKeywordInput" placeholder="搜索提示词" />
+					</view>
+					<scroll-view scroll-y class="prompt-scroll" :show-scrollbar="false" @scrolltolower="onPromptLoadMore">
+						<view class="prompt-list">
+							<uni-swipe-action>
+								<template v-for="item,index in promptList" :key="'prompt-item'+index">
+									<uni-swipe-action-item>
+										<view class="prompt-item">
+											<text class="prompt-text" :class="{'prompt-text-active': item.id === promptId}">{{ item.prompt }}</text>
+										</view>
+										<template v-slot:right>
+											<view class="prompt-button-wrapper">
+												<view class="prompt-op-button prompt-delete-button" @click="onDeletePrompt(item)"><text class="prompt-button-text">删除</text></view>
+												<view class="prompt-op-button" @click="onEditPromptItem(item)"><text class="prompt-button-text">编辑</text></view>
+												<view class="prompt-op-button" @click="onUsePrompt(item)"><text class="prompt-button-text">{{ item.id === promptId ? '取消使用' : '使用' }}</text></view>
+											</view>
+										</template>
+									</uni-swipe-action-item>
+									<view class="line" v-if="index < promptList.length - 1"></view>
+								</template>
+							</uni-swipe-action>
+						</view>
+					</scroll-view>
+					<view class="dialog-btn-wrapper">
+						<text class="dialog-btn dialog-btn-sure" :class="{'dialog-btn-active': promptId !== '', 'dialog-btn-disabled': promptId === ''}" @click="onConfirmPrompt">确定</text>
+						<text class="dialog-btn dialog-btn-cancle" @click="onCancelPrompt">取消</text>
+					</view>
+				</view>
+			</template>
+		</DialogComponent>
 	</view>
 </template>
 
@@ -270,6 +317,7 @@
 	import icon_refresh from '../../static/icon_refresh.png';
 	import icon_create_directory from '../../static/icon_create_directory.png';
 	import icon_upload from '../../static/icon_upload.png';
+	import icon_add from '../../static/icon_add.png';
 	import AvaterComponent from '../components/AvaterComponent.vue';
     import type {
       OptionType,
@@ -302,8 +350,12 @@
       createDirectoryService,
       getTenantUserService,
       getPromptService,
+      getPromptListService,
+      deletePromptService,
       getTenantListService,
-	  getDocListByDirIdService
+	  getDocListByDirIdService,
+	  getCompanyListService,
+	  uploadDocService
     } from "../service";
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
@@ -333,6 +385,7 @@
 	const showMyDoc = ref<boolean>(false);
 	const myDocList = reactive<DirectoryCheckInterface[]>([]);
 	const showThink = ref<boolean>(false);// 是否深度思考
+	const useTool = ref<boolean>(false);// 是否使用工具
 	const thinking = ref<boolean>(false);
 	const dialogText = ref<string>("");// 弹窗的内容
 	const checkedDocIds = reactive<string[]>([]);
@@ -366,6 +419,12 @@
 	const directoryName = ref<string>("");// 文件夹名称
 	const showUploadDialog = ref<boolean>(false);// 上传文档弹窗
 	const uploadDirectoryId = ref<string>("");// 上传选中的目录id
+	const showPromptDialog = ref<boolean>(false);// 提示词弹窗
+	const promptList = reactive<PromptInterface[]>([]);// 提示词列表
+	const promptKeyword = ref<string>("");// 提示词搜索关键字
+	const promptPageNum = ref<number>(1);// 提示词分页页码
+	const promptTotal = ref<number>(0);// 提示词总数
+	const promptId = ref<string>("");// 当前使用的提示词id
 	
 	// 支持的MIME类型映射
     const supportedMimeTypes = {
@@ -415,6 +474,8 @@
 				docIds:type.value == 'document' ? checkedDocIds : [],
 				prompt: inputValue.value.trim(),
 				showThink:showThink.value,
+				useTool:useTool.value,
+				promptId:promptId.value,
         		tenantId:store.tenantUser?.id!,
 				language: LanguageMap[language.value],
 			};
@@ -701,6 +762,158 @@
 	 */
 	const onSwitchThink = () => {
 		showThink.value = !showThink.value;
+	}
+
+	/**
+	 * @description: 是否开启使用工具
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onSwitchTool = () => {
+		useTool.value = !useTool.value;
+	}
+
+	/**
+	 * @description: 打开提示词弹窗
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onShowPromptDialog = () => {
+		showPromptDialog.value = true;
+		loadPromptList(true);
+	}
+
+	/**
+	 * @description: 加载提示词列表
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const loadPromptList = (reset: boolean = false) => {
+		if (reset) {
+			promptList.length = 0;
+			promptPageNum.value = 1;
+		}
+		const tenantId = store.tenantUser?.tenantId ?? "";
+		uni.showLoading({ title: '加载中...', mask: true });
+		getPromptListService(tenantId, promptKeyword.value, promptPageNum.value, PAGE_SIZE).then((res) => {
+			promptList.push(...res.data);
+			promptTotal.value = res.total;
+		}).catch((err) => {
+			console.error('加载提示词列表失败:', err);
+		}).finally(() => {
+			uni.hideLoading();
+		});
+	}
+
+	/**
+	 * @description: 刷新提示词列表
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onRefreshPrompt = () => {
+		loadPromptList(true);
+		uni.showToast({ duration: 2000, position: 'center', title: '刷新成功' });
+	}
+
+	/**
+	 * @description: 提示词搜索框输入（实时搜索）
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onPromptKeywordInput = (event: any) => {
+		promptKeyword.value = event.detail.value;
+		loadPromptList(true);
+	}
+
+	/**
+	 * @description: 提示词列表滚动加载更多
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onPromptLoadMore = () => {
+		if (promptTotal.value > promptPageNum.value * PAGE_SIZE) {
+			promptPageNum.value++;
+			loadPromptList(false);
+		}
+	}
+
+	/**
+	 * @description: 使用/取消使用提示词
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onUsePrompt = (item: PromptInterface) => {
+		if (promptId.value === item.id) {
+			promptId.value = "";
+		} else {
+			promptId.value = item.id;
+		}
+	}
+
+	/**
+	 * @description: 删除提示词
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onDeletePrompt = (item: PromptInterface) => {
+		uni.showModal({
+			title: '提示',
+			content: `是否删除提示词：${item.prompt}`,
+			success: (res) => {
+				if (res.confirm) {
+					deletePromptService(item.id, store.tenantUser?.tenantId ?? "").then((resp) => {
+						if (resp.data > 0) {
+							uni.showToast({ duration: 2000, position: 'center', title: '删除成功' });
+							const index = promptList.findIndex((p) => p.id === item.id);
+							if (index !== -1) promptList.splice(index, 1);
+							if (promptId.value === item.id) promptId.value = "";
+						} else {
+							uni.showToast({ duration: 2000, position: 'center', title: '删除失败' });
+						}
+					}).catch(() => {
+						uni.showToast({ duration: 2000, position: 'center', title: '删除失败' });
+					});
+				}
+			}
+		});
+	}
+
+	/**
+	 * @description: 编辑提示词（跳转到 UpdatePrompt 页面）
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onEditPromptItem = (item: PromptInterface) => {
+		uni.setStorageSync('editingPrompt', item);
+		uni.navigateTo({ url: '../pages/UpdatePrompt' });
+	}
+
+	/**
+	 * @description: 添加提示词（跳转到 AddPromptPage 页面）
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onAddPrompt = () => {
+		uni.navigateTo({ url: '../pages/AddPromptPage' });
+	}
+
+	/**
+	 * @description: 确定选择提示词
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onConfirmPrompt = () => {
+		showPromptDialog.value = false;
+	}
+
+	/**
+	 * @description: 取消选择提示词
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onCancelPrompt = () => {
+		showPromptDialog.value = false;
+		promptId.value = "";
 	}
 
 	/**	
@@ -1998,5 +2211,111 @@
 		    pointer-events: none;
 		  }
 		}
+	// 提示词弹窗
+	.prompt-dialog-wrapper {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: @middle-padding;
+		background: @page-background-color;
+		.prompt-search {
+			padding: @middle-padding @middle-padding 0 @middle-padding;
+			.prompt-search-input {
+				height: @input-height;
+				background-color: @white-color;
+				border-radius: @big-border-radius;
+				padding: 0 @middle-padding;
+				box-sizing: border-box;
+			}
+		}
+		.prompt-scroll {
+			flex: 1;
+			height: 0;
+			.prompt-list {
+				margin: 0 @middle-padding;
+				background-color: @white-color;
+				border-radius: @module-border-radius;
+				padding: @middle-padding;
+				box-sizing: border-box;
+				.prompt-item {
+					padding: @middle-padding 0;
+					display: flex;
+					align-items: center;
+					&:first-child {
+						padding-top: 0;
+					}
+					&:last-child {
+						padding-bottom: 0;
+					}
+					.prompt-text {
+						flex: 1;
+						width: 0;
+						display: -webkit-box;
+						-webkit-box-orient: vertical;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						-webkit-line-clamp: 3;
+						&.prompt-text-active {
+							color: @primary-color;
+						}
+					}
+				}
+				.line {
+					height: 1rpx;
+					background: @gray-color;
+				}
+				.prompt-button-wrapper {
+					display: flex;
+					.prompt-op-button {
+						display: flex;
+						height: 100%;
+						flex-direction: row;
+						justify-content: center;
+						align-items: center;
+						margin-left: @middle-padding;
+						background-color: @gray-color;
+						color: @white-color;
+						&.prompt-delete-button {
+							background-color: @warn-color;
+						}
+						.prompt-button-text {
+							padding: 0 calc(@middle-padding * 2);
+						}
+					}
+				}
+			}
+		}
+		.dialog-btn-wrapper {
+			display: flex;
+			gap: @middle-padding;
+			padding: @middle-padding;
+			background: @white-color;
+			.dialog-btn {
+				flex: 1;
+				height: @input-height;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-radius: @input-height;
+				&.dialog-btn-sure {
+					color: @white-color;
+					background-color: @gray-color;
+					border: 1rpx solid @gray-color;
+					&.dialog-btn-active {
+						background-color: @primary-color !important;
+						border-color: @primary-color !important;
+					}
+					&.dialog-btn-disabled {
+						background-color: @gray-color !important;
+						color: @white-color !important;
+						border-color: @gray-color !important;
+					}
+				}
+				&.dialog-btn-cancle {
+					border: 1rpx solid @gray-color;
+				}
+			}
+		}
+	}
 	}
 </style>

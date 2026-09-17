@@ -3,7 +3,7 @@ import type {MyAwesomeData} from '../utils/HttpUtils';
 import api from '../api';
 import type * as types from '../types';
 import md5 from 'md5';
-
+import {HOST} from "../common/constant"
 /**
  * @description: 根据token获取用户信息
  * @date: 2023-12-1 23:39
@@ -97,7 +97,7 @@ export const getChatHistoryService = (tenantId:string,pageNum:number,pageSize:nu
 }
 
 /**
- * @description: 获取模型列表
+ * @description: HOST获取模型列表
  * @date: 2025-05-16 00:19
  * @author wuwenqiang
  */
@@ -327,6 +327,42 @@ export const getPromptService = (tenantId: string): Promise<MyAwesomeData<types.
  */
 export const updatePromptService = (promptData: types.PromptInterface): Promise<MyAwesomeData<PromptInterface>> => {
   return httpRequest.put<types.PromptInterface>(api.updatePrompt, promptData);
+}
+
+/**
+ * @description: 获取提示词列表（分页 + 关键字搜索）
+ * @date: 2026-09-17
+ * @author wuwenqiang
+ */
+export const getPromptListService = (tenantId: string, keyword: string, pageNum: number, pageSize: number): Promise<MyAwesomeData<types.PromptInterface[]>> => {
+  return httpRequest.get<types.PromptInterface[]>(`${api.getPromptList}?tenantId=${tenantId}&keyword=${encodeURIComponent(keyword)}&pageSize=${pageSize}&pageNum=${pageNum}`);
+}
+
+/**
+ * @description: 删除提示词
+ * @date: 2026-09-17
+ * @author wuwenqiang
+ */
+export const deletePromptService = (promptId: string, tenantId: string): Promise<MyAwesomeData<number>> => {
+  return httpRequest.delete<number>(`${api.deletePrompt}${promptId}/${tenantId}`);
+}
+
+/**
+ * @description: 添加提示词
+ * @date: 2026-09-17
+ * @author wuwenqiang
+ */
+export const insertPromptService = (payload: { tenantId: string; prompt: string }): Promise<MyAwesomeData<number>> => {
+  return httpRequest.post<number>(api.insertPrompt, payload);
+}
+
+/**
+ * @description: 更新提示词内容（编辑，仅更新 prompt 文本）
+ * @date: 2026-09-17
+ * @author wuwenqiang
+ */
+export const updatePromptContentService = (id: string, prompt: string): Promise<MyAwesomeData<number>> => {
+  return httpRequest.put<number>(api.updatePrompt, { id, prompt });
 }
 
 /**

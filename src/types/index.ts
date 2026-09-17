@@ -91,6 +91,8 @@ export interface PayloadInterface {
   prompt: string;// 用户提示词
   systemPrompt:string;// 系统提示词
   showThink:boolean;
+  useTool:boolean;
+  promptId:string;
   directoryId?:string;
   language:string;
 };
