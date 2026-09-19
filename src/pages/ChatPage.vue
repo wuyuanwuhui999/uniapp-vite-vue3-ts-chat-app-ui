@@ -2235,18 +2235,12 @@
 				margin: 0 @middle-padding;
 				background-color: @white-color;
 				border-radius: @module-border-radius;
-				padding: @middle-padding;
+				padding:0 @middle-padding;
 				box-sizing: border-box;
 				.prompt-item {
 					padding: @middle-padding 0;
 					display: flex;
 					align-items: center;
-					&:first-child {
-						padding-top: 0;
-					}
-					&:last-child {
-						padding-bottom: 0;
-					}
 					.prompt-text {
 						flex: 1;
 						width: 0;
