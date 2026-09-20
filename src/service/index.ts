@@ -282,13 +282,33 @@ export const getDocListByDirIdService = (tenantId:string,directoryId:string):Pro
  * @date: 2026-09-13
  * @author wuwenqiang
  */
-export const uploadDocService = (filePath: string, fileName: string, tenantId: string, directoryId: string): Promise<MyAwesomeData<number>> => {
+export const uploadDocService = (params: {
+  filePath: string;
+  fileName: string;
+  tenantId: string;
+  directoryId: string;
+  permission: string;
+  splitMethod: string;
+  chunkSize?: number;
+}): Promise<MyAwesomeData<number>> => {
+  const { filePath, fileName, tenantId, directoryId, permission, splitMethod, chunkSize } = params;
+  const formData: any = {
+    filename: fileName,
+    tenantId,
+    directoryId,
+    permission,
+    splitMethod
+  };
+  // chunkSize 仅对固定长度分割（fixed）生效
+  if (splitMethod === 'fixed') {
+    formData.chunkSize = chunkSize;
+  }
   return new Promise((resolve, reject) => {
     uni.uploadFile({
-      url: `${HOST}${api.uploadDoc}/${tenantId}/${directoryId}`,
+      url: `${HOST}${api.uploadDoc}`,
       filePath,
       name: 'file',
-      formData: { filename: fileName },
+      formData,
       header: {
         'Authorization': `Bearer ${httpRequest.getToken()}`
       },

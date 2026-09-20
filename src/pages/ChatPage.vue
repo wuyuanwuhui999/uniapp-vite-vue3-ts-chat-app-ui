@@ -203,6 +203,49 @@
 		  </template>
 		</DialogComponent>
 
+		<!-- 文档设置弹窗 -->
+		<DialogComponent v-if="showDocSettingDialog" :z-index="4" @onClose="onCloseDocSettingDialog">
+			<template #header>
+				<text class="dialog-header">文档设置</text>
+			</template>
+			<template #content>
+				<view class="doc-setting-wrapper">
+					<view class="setting-list">
+						<view class="setting-item">
+							<text class="setting-label">权限</text>
+							<picker mode="selector" :range="permissionOptions" range-key="label" :value="permissionIndex" @change="onPermissionChange">
+								<view class="setting-picker">
+									<text>{{ permissionOptions[permissionIndex].label }}</text>
+									<image class="icon-small" :src="icon_arrow" />
+								</view>
+							</picker>
+						</view>
+						<view class="line"></view>
+						<view class="setting-item">
+							<text class="setting-label">分割模式</text>
+							<picker mode="selector" :range="splitMethodOptions" range-key="label" :value="splitMethodIndex" @change="onSplitMethodChange">
+								<view class="setting-picker">
+									<text>{{ splitMethodOptions[splitMethodIndex].label }}</text>
+									<image class="icon-small" :src="icon_arrow" />
+								</view>
+							</picker>
+						</view>
+						<template v-if="splitMethodOptions[splitMethodIndex].value === 'fixed'">
+							<view class="line"></view>
+							<view class="setting-item">
+								<text class="setting-label">分割大小</text>
+								<input class="setting-input" type="number" v-model="chunkSize" placeholder="请输入分割大小" />
+							</view>
+						</template>
+					</view>
+					<view class="dialog-btn-wrapper">
+						<text class="dialog-btn dialog-btn-sure dialog-btn-active" @click="onConfirmUpload">确定</text>
+						<text class="dialog-btn dialog-btn-cancle" @click="onCloseDocSettingDialog">取消</text>
+					</view>
+				</view>
+			</template>
+		</DialogComponent>
+
 		<!-- ChatPage.vue - 选择文档弹窗 -->
 		<DialogComponent v-if="showCheckDocument" :show-close="false" @onClose="onCloseCheckDocument">
 		  <template #header>
@@ -419,6 +462,24 @@
 	const directoryName = ref<string>("");// 文件夹名称
 	const showUploadDialog = ref<boolean>(false);// 上传文档弹窗
 	const uploadDirectoryId = ref<string>("");// 上传选中的目录id
+	const showDocSettingDialog = ref<boolean>(false);// 文档设置弹窗
+	const pendingUploadFiles = reactive<UploadFile[]>([]);// 待上传的文件
+	const permissionIndex = ref<number>(0);// 权限选中索引
+	const splitMethodIndex = ref<number>(0);// 分割模式选中索引
+	const chunkSize = ref<string>("1000");// 分割大小
+	// 文档权限选项
+	const permissionOptions = [
+		{ value: 'private', label: '私密' },
+		{ value: 'tenant', label: '租户内公开' },
+		{ value: 'company', label: '公司内公开' }
+	];
+	// 分割模式选项
+	const splitMethodOptions = [
+		{ value: 'recursive', label: '递归字符分割（推荐）' },
+		{ value: 'paragraph', label: '按段落分割' },
+		{ value: 'sentence', label: '按句子分割' },
+		{ value: 'fixed', label: '固定长度分割' }
+	];
 	const showPromptDialog = ref<boolean>(false);// 提示词弹窗
 	const promptList = reactive<PromptInterface[]>([]);// 提示词列表
 	const promptKeyword = ref<string>("");// 提示词搜索关键字
@@ -1213,7 +1274,7 @@
 	    count: 9,
 	    type: 'file',
 	    extension: supportedExtensions,
-	    success: async (res: { tempFiles: UploadFile[] }) => {
+	    success: (res: { tempFiles: UploadFile[] }) => {
 	      const validFiles = res.tempFiles.filter(file => {
 	        const ext = file.name.split('.').pop()?.toLowerCase();
 	        return ext && supportedExtensions.includes(ext);
@@ -1226,34 +1287,14 @@
 	        });
 	        return;
 	      }
-	      uni.showLoading({ title: '上传中...', mask: true });
-	      try {
-	        const uploadPromises = validFiles.map(file => {
-	          return uploadDocService(
-	            file.path,
-	            file.name,
-	            store.tenantUser?.tenantId ?? "",
-	            uploadDirectoryId.value
-	          );
-	        });
-	        await Promise.all(uploadPromises);
-	        uni.showToast({
-	          title: `成功上传${validFiles.length}个文件`,
-	          icon: 'success',
-	          duration: 2000
-	        });
-	        showUploadDialog.value = false;
-	        // 刷新目录列表
-	        loadDirectoryList();
-	      } catch (error) {
-	        uni.showToast({
-	          title: error instanceof Error ? error.message : '上传过程中出错',
-	          icon: 'none',
-	          duration: 2000
-	        });
-	      } finally {
-	        uni.hideLoading();
-	      }
+	      // 保存待上传文件，弹出文档设置弹窗
+	      pendingUploadFiles.length = 0;
+	      pendingUploadFiles.push(...validFiles);
+	      permissionIndex.value = 0;
+	      splitMethodIndex.value = 0;
+	      chunkSize.value = "1000";
+	      showUploadDialog.value = false;
+	      showDocSettingDialog.value = true;
 	    },
 	    fail: () => {
 	      uni.showToast({
@@ -1264,6 +1305,79 @@
 	      });
 	    }
 	  });
+	};
+
+	/**
+	 * @description: 文档权限下拉选择
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onPermissionChange = (event: any) => {
+	  permissionIndex.value = Number(event.detail.value);
+	};
+
+	/**
+	 * @description: 分割模式下拉选择
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onSplitMethodChange = (event: any) => {
+	  splitMethodIndex.value = Number(event.detail.value);
+	};
+
+	/**
+	 * @description: 关闭文档设置弹窗
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onCloseDocSettingDialog = () => {
+	  showDocSettingDialog.value = false;
+	  pendingUploadFiles.length = 0;
+	};
+
+	/**
+	 * @description: 文档设置确定，携带权限/分割参数上传
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onConfirmUpload = async () => {
+	  if (pendingUploadFiles.length === 0) return;
+	  const permission = permissionOptions[permissionIndex.value].value;
+	  const splitMethod = splitMethodOptions[splitMethodIndex.value].value;
+	  const chunkSizeValue = Number(chunkSize.value);
+	  const tenantId = store.tenantUser?.tenantId ?? "";
+	  uni.showLoading({ title: '上传中...', mask: true });
+	  try {
+	    const uploadPromises = pendingUploadFiles.map(file => {
+	      return uploadDocService({
+	        filePath: file.path,
+	        fileName: file.name,
+	        tenantId,
+	        directoryId: uploadDirectoryId.value,
+	        permission,
+	        splitMethod,
+	        chunkSize: chunkSizeValue
+	      });
+	    });
+	    await Promise.all(uploadPromises);
+	    uni.showToast({
+	      title: `成功上传${pendingUploadFiles.length}个文件`,
+	      icon: 'success',
+	      duration: 2000
+	    });
+	    showDocSettingDialog.value = false;
+	    pendingUploadFiles.length = 0;
+	    // 刷新目录列表
+	    loadDirectoryList();
+	  } catch (error) {
+	    uni.showToast({
+	      title: error instanceof Error ? error.message : '上传过程中出错',
+	      icon: 'none',
+	      duration: 2000
+	    });
+	  } finally {
+	    uni.hideLoading();
+	  }
 	};
 
 	/**
@@ -2277,6 +2391,83 @@
 						}
 					}
 				}
+			}
+		}
+		.dialog-btn-wrapper {
+			display: flex;
+			gap: @middle-padding;
+			padding: @middle-padding;
+			background: @white-color;
+			.dialog-btn {
+				flex: 1;
+				height: @input-height;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-radius: @input-height;
+				&.dialog-btn-sure {
+					color: @white-color;
+					background-color: @gray-color;
+					border: 1rpx solid @gray-color;
+					&.dialog-btn-active {
+						background-color: @primary-color !important;
+						border-color: @primary-color !important;
+					}
+					&.dialog-btn-disabled {
+						background-color: @gray-color !important;
+						color: @white-color !important;
+						border-color: @gray-color !important;
+					}
+				}
+				&.dialog-btn-cancle {
+					border: 1rpx solid @gray-color;
+				}
+			}
+		}
+	}
+	// 文档设置弹窗
+	.doc-setting-wrapper {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: @middle-padding;
+		background: @page-background-color;
+		.setting-list {
+			margin: @middle-padding;
+			margin-bottom: 0;
+			background-color: @white-color;
+			border-radius: @module-border-radius;
+			padding: 0 @middle-padding;
+			box-sizing: border-box;
+			.setting-item {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: @middle-padding 0;
+				.setting-label {
+					flex-shrink: 0;
+					color: @black-color;
+				}
+				.setting-picker {
+					display: flex;
+					align-items: center;
+					gap: @small-padding;
+					color: @sub-title-color;
+				}
+				.setting-input {
+					flex: 1;
+					margin-left: @middle-padding;
+					height: @input-height;
+					background-color: @page-background-color;
+					border-radius: @module-border-radius;
+					padding: 0 @middle-padding;
+					box-sizing: border-box;
+					text-align: right;
+				}
+			}
+			.line {
+				height: 1rpx;
+				background: @gray-color;
 			}
 		}
 		.dialog-btn-wrapper {
