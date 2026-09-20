@@ -115,23 +115,31 @@
 				<text class="dialog-header">我的文档</text>
 			</template>
 			<template #content>
-				<scroll-view class="pop-scroll-view" scroll-y :show-scrollbar="false">
-					<uni-swipe-action>
-						<template v-for="aItem,aIndex in myDocList" :key="'docList'+aIndex">
-							<text class="directory-name">{{ aItem.directoryName }}</text>
-							<uni-swipe-action-item v-for="item,bIndex in aItem.docList" :key="item.id">
-								<view class="doc-item">
-									<text class="doc-name">{{ item.name }}</text>
-									<text class="doc-time"> {{ formatTimeAgo(item.createTime) }}</text>
+				<view class="directory-wrapper">
+					<scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
+						<view class="directory-list module-block">
+							<view class="directory-item directory-item-select" v-for="item in directoryList" :key="item.id">
+								<view class="directory-info" @click="onToggleDirectory(item)">
+									<text class="directory-name">{{ item.directory }}</text>
+									<image class="icon-mini icon-arrow" :class="item.expand ? 'icon-rotate' : ''" :src="icon_arrow"></image>
 								</view>
-								<template v-slot:right>
-									<view class="delete-button" @click="onDeleteDoc(item,aIndex,bIndex)"><text class="delete-button-text">删除</text></view>
-								</template>
-							</uni-swipe-action-item>
-							<view class="line" v-if="aIndex < myDocList.length -1"></view>
-						</template>
-					</uni-swipe-action>
-				</scroll-view>
+								<view class="doc-wrapper" v-if="item.expand && item.docList?.length">
+									<uni-swipe-action>
+										<uni-swipe-action-item v-for="doc in item.docList" :key="doc.id">
+											<view class="doc-item">
+												<text class="doc-name">{{ doc.name }}</text>
+												<text class="doc-time">{{ formatTimeAgo(doc.createTime) }}</text>
+											</view>
+											<template v-slot:right>
+												<view class="delete-button" @click="onDeleteDoc(doc, item)"><text class="delete-button-text">删除</text></view>
+											</template>
+										</uni-swipe-action-item>
+									</uni-swipe-action>
+								</view>
+							</view>
+						</view>
+					</scroll-view>
+				</view>
 			</template>
 		</DialogComponent>
 		<OptionsDialog ref="modelOptionsDialog" @onCheck="onCheckModel" :options="chatModelOption"/>
@@ -238,6 +246,7 @@
 							</view>
 						</template>
 					</view>
+					<view class="expand"></view>
 					<view class="dialog-btn-wrapper">
 						<text class="dialog-btn dialog-btn-sure dialog-btn-active" @click="onConfirmUpload">确定</text>
 						<text class="dialog-btn dialog-btn-cancle" @click="onCloseDocSettingDialog">取消</text>
@@ -387,7 +396,6 @@
     import {
       getChatHistoryService,
       getModelListService,
-      getMyDocumentService,
       deleteMyDocumentService,
       getDirectoryListService,
       createDirectoryService,
@@ -417,8 +425,8 @@
 	const showHistory = ref<boolean>(false);
 	const total = ref<number>(0);
 	let chatId:string = "";
-	let deleteIndex:number = -1;
-	let deleteDirIndex:number = -1;
+	let deleteDocItem:DocumentInterface | null = null;
+	let deleteDocDir:DirectoryInterce | null = null;
 	const popupComponent = ref<null | InstanceType<typeof PopupComponent>>(null);
 	const inputValue = ref<string>("");
 	const store = useStore();
@@ -426,7 +434,6 @@
 	const activeModelIndex = ref<number>(0);
 	const showMenu = ref<boolean>(false);
 	const showMyDoc = ref<boolean>(false);
-	const myDocList = reactive<DirectoryCheckInterface[]>([]);
 	const showThink = ref<boolean>(false);// 是否深度思考
 	const useTool = ref<boolean>(false);// 是否使用工具
 	const thinking = ref<boolean>(false);
@@ -751,36 +758,9 @@
 	 * @author wuwenqiang
 	 */
 	const onShowMyDoc = () => {
-		uni.showLoading();
-		getMyDocumentList().then((res)=>{
-			showMyDoc.value = true;
-			showMenu.value = false;
-			myDocList.length = 0;
-			myDocList.push(...res);
-		}).finally(()=>{
-			uni.hideLoading();
-		});
-	}
-
-	const getMyDocumentList = ():Promise<DirectoryCheckInterface[]> => {
-		return getMyDocumentService(store.tenantUser?.tenantId??"personal").then((res)=>{
-			const myDocList:DirectoryCheckInterface[] = []
-			res.data.forEach((aItem)=>{
-				let bItems = myDocList.find((item)=>{
-					return item.directoryName === aItem.directoryName;
-				});
-				if(!bItems){
-					bItems = {
-						directoryName:aItem.directoryName,
-						docList:[] as DocumentInterface[]
-					};
-					myDocList.push(bItems);
-				}
-				aItem.checked = checkedDocIds.includes(aItem.id);
-				bItems.docList.push(aItem);
-			});
-			return myDocList;
-		})
+		showMyDoc.value = true;
+		showMenu.value = false;
+		loadDirectoryList();
 	}
 
 	const onClose = ()=>{
@@ -1001,9 +981,9 @@
 	 * @date: 2025-07-12 13:03
 	 * @author wuwenqiang
 	 */
-	const onDeleteDoc = (item:DocumentInterface,dirIndex:number,index:number) =>{
-		deleteIndex = index;
-		deleteDirIndex = dirIndex;
+	const onDeleteDoc = (item:DocumentInterface,dir:DirectoryInterce) =>{
+		deleteDocItem = item;
+		deleteDocDir = dir;
 		dialogText.value = `是否删除文档：${item.name}`;
 		popupComponent.value?.popup.value?.open('top');
 	}
@@ -1014,13 +994,17 @@
 	 * @author wuwenqiang
 	 */
 	const sureDeleteDoc = ()=>{
-		deleteMyDocumentService(myDocList[deleteDirIndex][deleteIndex].id,directoryId.value).then((res)=>{
+		if(!deleteDocItem || !deleteDocDir) return;
+		deleteMyDocumentService(deleteDocItem.id, deleteDocDir.id ?? "").then((res)=>{
 			uni.showToast({
 				duration:2000,
 				position:'center',
 				title: "删除文档成功"
 			});
-			myDocList.splice(deleteIndex,1);
+			const index = deleteDocDir!.docList?.findIndex((doc)=>doc.id === deleteDocItem!.id);
+			if(index !== undefined && index !== -1){
+				deleteDocDir!.docList?.splice(index,1);
+			}
 			popupComponent.value?.popup?.close();
 		}).catch(()=>{
 			uni.showToast({
@@ -1130,7 +1114,7 @@
 	 * @date: 2026-09-13
 	 * @author wuwenqiang
 	 */
-	const onToggleDirectory = (item: DirectoryCheckInterface) => {
+	const onToggleDirectory = (item: DirectoryInterce) => {
 	  if (item.expand) {
 	    // 已展开，折叠
 	    item.expand = false;
@@ -1421,7 +1405,7 @@
 	    // 查询文档变为灰色状态（非激活）
 	    type.value = '';
 	    // 重置所有文档的选中状态
-	    myDocList.forEach((dir) => {
+	    directoryList.forEach((dir) => {
 	        dir.docList?.forEach((doc) => {
 	            doc.checked = false;
 	        });
@@ -1749,15 +1733,6 @@
 	  });
 	};
 
-	const getCheckedDocIds = ()=>{
-		checkedDocIds.length = 0;
-		myDocList.forEach((aItem)=>{
-			aItem.docList?.forEach((bItem)=>{
-				if(bItem.checked)checkedDocIds.push(bItem.id);
-			})
-		});		
-	}
-
 	/**
 	 * @description: 展开/折叠目录
 	 * @date: 2026-09-05
@@ -2066,8 +2041,26 @@
 							margin-top: @middle-padding;
 							.doc-item{
 								display: flex;
+								align-items: center;
 								.doc-name{
 									flex: 1;
+								}
+								.doc-time{
+									color: @sub-title-color;
+									padding-left: @middle-padding;
+								}
+							}
+							.delete-button{
+								display: flex;
+								height: 100%;
+								flex-direction: row;
+								justify-content: center;
+								align-items: center;
+								background-color: @warn-color;
+								margin-left: @middle-padding;
+								.delete-button-text{
+									color: @white-color;
+									padding: 0 calc(@middle-padding * 2);
 								}
 							}
 						}
@@ -2432,6 +2425,9 @@
 		flex-direction: column;
 		gap: @middle-padding;
 		background: @page-background-color;
+		.expand{
+			flex: 1;
+		}
 		.setting-list {
 			margin: @middle-padding;
 			margin-bottom: 0;
