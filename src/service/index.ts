@@ -129,7 +129,7 @@ export const deleteMyDocumentService = (docId:string):Promise<MyAwesomeData<numb
  * @author wuwenqiang
  */
 export const updateDocPermissionService = (docId:string, permission:string):Promise<MyAwesomeData<number>> => {
-  return httpRequest.put<number>(`${api.updateDocPermission}${docId}`, { permission });
+  return httpRequest.put<number>(`${api.updateDocPermission}`, { docId, permission });
 }
 
 /**
