@@ -106,6 +106,7 @@ export interface DocumentInterface {
   updateTime: string// 更新时间
   directoryId:string// 目录id
   directoryName:string;// 目录名称
+  permission?: string;// 文档权限
   checked?:boolean;// 是否选中
 };
 

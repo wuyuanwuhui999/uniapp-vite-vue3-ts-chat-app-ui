@@ -124,17 +124,10 @@
 									<image class="icon-mini icon-arrow" :class="item.expand ? 'icon-rotate' : ''" :src="icon_arrow"></image>
 								</view>
 								<view class="doc-wrapper" v-if="item.expand && item.docList?.length">
-									<uni-swipe-action>
-										<uni-swipe-action-item v-for="doc in item.docList" :key="doc.id">
-											<view class="doc-item">
-												<text class="doc-name">{{ doc.name }}</text>
-												<text class="doc-time">{{ formatTimeAgo(doc.createTime) }}</text>
-											</view>
-											<template v-slot:right>
-												<view class="delete-button" @click="onDeleteDoc(doc, item)"><text class="delete-button-text">删除</text></view>
-											</template>
-										</uni-swipe-action-item>
-									</uni-swipe-action>
+									<view class="doc-item" v-for="doc in item.docList" :key="doc.id">
+										<text class="doc-name">{{ doc.name }}</text>
+										<image class="icon-small doc-action-icon" :src="icon_menu" @click="onShowDocAction(doc, item)" />
+									</view>
 								</view>
 							</view>
 						</view>
@@ -142,9 +135,35 @@
 				</view>
 			</template>
 		</DialogComponent>
+
+		<!-- 修改权限弹窗 -->
+		<DialogComponent v-if="showPermissionDialog" :z-index="5" @onClose="onClosePermissionDialog">
+			<template #header>
+				<text class="dialog-header">修改权限</text>
+			</template>
+			<template #content>
+				<view class="doc-setting-wrapper">
+					<view class="setting-list">
+						<view class="setting-item">
+							<text class="setting-label">文档权限</text>
+							<picker mode="selector" :range="permissionOptions" range-key="label" :value="editPermissionIndex" @change="onEditPermissionChange">
+								<view class="setting-picker">
+									<text>{{ permissionOptions[editPermissionIndex].label }}</text>
+									<image class="icon-small" :src="icon_arrow" />
+								</view>
+							</picker>
+						</view>
+					</view>
+					<view class="dialog-btn-wrapper">
+						<text class="dialog-btn dialog-btn-sure dialog-btn-active" @click="onSureUpdatePermission">确定</text>
+						<text class="dialog-btn dialog-btn-cancle" @click="onClosePermissionDialog">取消</text>
+					</view>
+				</view>
+			</template>
+		</DialogComponent>
+
 		<OptionsDialog ref="modelOptionsDialog" @onCheck="onCheckModel" :options="chatModelOption"/>
 		<OptionsDialog ref="tenantOptionsDialog" @onCheck="onSelectTenant" :options="tenantOptionList"/>
-		<PopupComponent :text="dialogText" @on-sure="sureDeleteDoc" ref="popupComponent"></PopupComponent>
 		<DialogComponent v-if="showDirDialog" @onClose="showDirDialog = false">
 			<template #header>
 				<image :src="icon_menu_add" @click="onCreateDirectory" class="icon-middle icon-add-directory" />
@@ -391,12 +410,13 @@
     } from '../types';
     import { PositionEnum } from '../enum';
 	import { formatTimeAgo, generateSecureID } from "../utils/util";
-    import {HOST, PAGE_SIZE, DEFAULT_TENANT_USER,PRIMARY_COLOR} from '../common/constant';
+    import {HOST, PAGE_SIZE, DEFAULT_TENANT_USER,PRIMARY_COLOR, permissionOptions} from '../common/constant';
 	import api from '@/api';
     import {
       getChatHistoryService,
       getModelListService,
       deleteMyDocumentService,
+      updateDocPermissionService,
       getDirectoryListService,
       createDirectoryService,
       getTenantUserService,
@@ -411,7 +431,6 @@
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
 	import uniSwipeActionItem from '@dcloudio/uni-ui/lib/uni-swipe-action-item/uni-swipe-action-item.vue';
-	import PopupComponent from "../components/PopupComponent.vue";
 	import {LanguageEnum,LanguageMap} from '../enum/index';
 
 	const OptionsDialog = defineAsyncComponent(()=>import('../components/OptionsDialog.vue'))
@@ -425,9 +444,8 @@
 	const showHistory = ref<boolean>(false);
 	const total = ref<number>(0);
 	let chatId:string = "";
-	let deleteDocItem:DocumentInterface | null = null;
-	let deleteDocDir:DirectoryInterce | null = null;
-	const popupComponent = ref<null | InstanceType<typeof PopupComponent>>(null);
+	let currentDoc:DocumentInterface | null = null;
+	let currentDocDir:DirectoryInterce | null = null;
 	const inputValue = ref<string>("");
 	const store = useStore();
 	const scrollTop = ref<number>(0);
@@ -437,7 +455,6 @@
 	const showThink = ref<boolean>(false);// 是否深度思考
 	const useTool = ref<boolean>(false);// 是否使用工具
 	const thinking = ref<boolean>(false);
-	const dialogText = ref<string>("");// 弹窗的内容
 	const checkedDocIds = reactive<string[]>([]);
 	const chatList = reactive<Array<ChatType>>([
 		{
@@ -470,16 +487,12 @@
 	const showUploadDialog = ref<boolean>(false);// 上传文档弹窗
 	const uploadDirectoryId = ref<string>("");// 上传选中的目录id
 	const showDocSettingDialog = ref<boolean>(false);// 文档设置弹窗
+	const showPermissionDialog = ref<boolean>(false);// 修改权限弹窗
+	const editPermissionIndex = ref<number>(0);// 修改权限选中索引
 	const pendingUploadFiles = reactive<UploadFile[]>([]);// 待上传的文件
 	const permissionIndex = ref<number>(0);// 权限选中索引
 	const splitMethodIndex = ref<number>(0);// 分割模式选中索引
 	const chunkSize = ref<string>("1000");// 分割大小
-	// 文档权限选项
-	const permissionOptions = [
-		{ value: 'private', label: '私密' },
-		{ value: 'tenant', label: '租户内公开' },
-		{ value: 'company', label: '公司内公开' }
-	];
 	// 分割模式选项
 	const splitMethodOptions = [
 		{ value: 'recursive', label: '递归字符分割（推荐）' },
@@ -976,44 +989,116 @@
     activeModelIndex.value = index
 	}
 
-	/**	
-	 * @description: 删除文档
-	 * @date: 2025-07-12 13:03
+	/**
+	 * @description: 点击文档的三个点图标，弹出操作选项
+	 * @date: 2026-09-17
 	 * @author wuwenqiang
 	 */
-	const onDeleteDoc = (item:DocumentInterface,dir:DirectoryInterce) =>{
-		deleteDocItem = item;
-		deleteDocDir = dir;
-		dialogText.value = `是否删除文档：${item.name}`;
-		popupComponent.value?.popup.value?.open('top');
-	}
-
-	/**	
-	 * @description: 确认删除文档
-	 * @date: 2025-07-12 13:03
-	 * @author wuwenqiang
-	 */
-	const sureDeleteDoc = ()=>{
-		if(!deleteDocItem || !deleteDocDir) return;
-		deleteMyDocumentService(deleteDocItem.id, deleteDocDir.id ?? "").then((res)=>{
-			uni.showToast({
-				duration:2000,
-				position:'center',
-				title: "删除文档成功"
-			});
-			const index = deleteDocDir!.docList?.findIndex((doc)=>doc.id === deleteDocItem!.id);
-			if(index !== undefined && index !== -1){
-				deleteDocDir!.docList?.splice(index,1);
+	const onShowDocAction = (doc:DocumentInterface, dir:DirectoryInterce) => {
+		currentDoc = doc;
+		currentDocDir = dir;
+		uni.showActionSheet({
+			itemList: ['修改权限', '删除'],
+			success: (res) => {
+				if (res.tapIndex === 0) {
+					// 修改权限：回显当前权限
+					const idx = permissionOptions.findIndex((o) => o.value === doc.permission);
+					editPermissionIndex.value = idx === -1 ? 0 : idx;
+					showPermissionDialog.value = true;
+				} else if (res.tapIndex === 1) {
+					// 删除
+					uni.showModal({
+						title: '提示',
+						content: '是否确认删除',
+						success: (modalRes) => {
+							if (modalRes.confirm) {
+								onDeleteDocConfirm();
+							}
+						}
+					});
+				}
 			}
-			popupComponent.value?.popup?.close();
-		}).catch(()=>{
-			uni.showToast({
-				duration:2000,
-				position:'center',
-				title: "删除文档失败"
-			});
 		});
-	}
+	};
+
+	/**
+	 * @description: 修改权限下拉选择
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onEditPermissionChange = (event: any) => {
+		editPermissionIndex.value = Number(event.detail.value);
+	};
+
+	/**
+	 * @description: 关闭修改权限弹窗
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onClosePermissionDialog = () => {
+		showPermissionDialog.value = false;
+	};
+
+	/**
+	 * @description: 确定修改文档权限
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onSureUpdatePermission = () => {
+		if (!currentDoc) return;
+		const permission = permissionOptions[editPermissionIndex.value].value;
+		uni.showLoading({ title: '修改中...', mask: true });
+		updateDocPermissionService(currentDoc.id, permission).then((res) => {
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: res.msg || (res.data > 0 ? '修改成功' : '修改失败')
+			});
+			if (res.data > 0) {
+				currentDoc!.permission = permission;
+				showPermissionDialog.value = false;
+			}
+		}).catch((err) => {
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: err.msg || '修改失败'
+			});
+		}).finally(() => {
+			uni.hideLoading();
+		});
+	};
+
+	/**
+	 * @description: 确认删除文档
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onDeleteDocConfirm = () => {
+		if (!currentDoc || !currentDocDir) return;
+		uni.showLoading({ title: '删除中...', mask: true });
+		deleteMyDocumentService(currentDoc.id).then((res) => {
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: res.msg || (res.data > 0 ? '删除成功' : '删除失败')
+			});
+			if (res.data > 0) {
+				const index = currentDocDir!.docList?.findIndex((doc) => doc.id === currentDoc!.id);
+				if (index !== undefined && index !== -1) {
+					currentDocDir!.docList?.splice(index, 1);
+				}
+			}
+		}).catch((err) => {
+			uni.showToast({
+				duration: 2000,
+				position: 'center',
+				title: err.msg || '删除失败'
+			});
+		}).finally(() => {
+			uni.hideLoading();
+		});
+	};
 
 	const onSwitchLang = ()=>{
 		language.value = language.value === LanguageEnum.zh ? LanguageEnum.en : LanguageEnum.zh
@@ -2045,22 +2130,9 @@
 								.doc-name{
 									flex: 1;
 								}
-								.doc-time{
-									color: @sub-title-color;
+								.doc-action-icon{
 									padding-left: @middle-padding;
-								}
-							}
-							.delete-button{
-								display: flex;
-								height: 100%;
-								flex-direction: row;
-								justify-content: center;
-								align-items: center;
-								background-color: @warn-color;
-								margin-left: @middle-padding;
-								.delete-button-text{
-									color: @white-color;
-									padding: 0 calc(@middle-padding * 2);
+									opacity: 0.5;
 								}
 							}
 						}

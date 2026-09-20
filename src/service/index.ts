@@ -119,8 +119,17 @@ export const getMyDocumentService = (tenantId:string):Promise<MyAwesomeData<Arra
  * @date: 2025-07-12 11:31
  * @author wuwenqiang
  */
-export const deleteMyDocumentService = (docId:string,directoryId:string):Promise<MyAwesomeData<number>> => {
-  return httpRequest.delete<number>(`${api.deleteDoc}${docId}?directoryId=${directoryId}`);
+export const deleteMyDocumentService = (docId:string):Promise<MyAwesomeData<number>> => {
+  return httpRequest.delete<number>(`${api.deleteDoc}${docId}`);
+}
+
+/**
+ * @description: 修改文档权限
+ * @date: 2026-09-17
+ * @author wuwenqiang
+ */
+export const updateDocPermissionService = (docId:string, permission:string):Promise<MyAwesomeData<number>> => {
+  return httpRequest.put<number>(`${api.updateDocPermission}${docId}`, { permission });
 }
 
 /**

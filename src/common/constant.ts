@@ -42,3 +42,10 @@ export const DEFAULT_TENANT_USER:TenantUserType = {
 export const DEFAULT_PROMPT = "你叫小吴同学，是一个无所不能的AI助手，上知天文下知地理，请用小吴同学的身份回答问题。"
 
 export const PRIMARY_COLOR = '#ffae00';
+
+// 文档权限选项
+export const permissionOptions = [
+  { value: 'private', label: '私密' },
+  { value: 'tenant', label: '租户内公开' },
+  { value: 'company', label: '公司内公开' }
+];

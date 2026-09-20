@@ -18,6 +18,7 @@ export default {
   uploadDoc: "/service/chat/uploadDoc",// 生成向量
   getDocList: "/service/chat/getDocList",// 查询我的文档
   deleteDoc: "/service/chat/deleteDoc/",// 查询我的文档
+  updateDocPermission: "/service/chat/updateDocPermission/",// 修改文档权限
   getDirectoryList: "/service/chat/getDirectoryList",// 查询目录列表
   createDir: "/service/chat/createDir",// 创建目录
   renameDir: "/service/chat/renameDir",// 重命名目录
