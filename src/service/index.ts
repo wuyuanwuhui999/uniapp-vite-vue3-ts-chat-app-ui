@@ -295,15 +295,17 @@ export const uploadDocService = (params: {
   filePath: string;
   fileName: string;
   tenantId: string;
+  companyId: string;
   directoryId: string;
   permission: string;
   splitMethod: string;
   chunkSize?: number;
 }): Promise<MyAwesomeData<number>> => {
-  const { filePath, fileName, tenantId, directoryId, permission, splitMethod, chunkSize } = params;
+  const { filePath, fileName, tenantId, companyId, directoryId, permission, splitMethod, chunkSize } = params;
   const formData: any = {
     filename: fileName,
     tenantId,
+    companyId,
     directoryId,
     permission,
     splitMethod

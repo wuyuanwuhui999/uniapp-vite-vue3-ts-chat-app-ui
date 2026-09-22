@@ -1422,6 +1422,7 @@
 	        filePath: file.path,
 	        fileName: file.name,
 	        tenantId,
+	        companyId: store.company?.id ?? "",
 	        directoryId: uploadDirectoryId.value,
 	        permission,
 	        splitMethod,
