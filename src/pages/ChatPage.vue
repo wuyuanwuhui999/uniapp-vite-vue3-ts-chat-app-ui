@@ -279,7 +279,11 @@
 		  <template #header>
 		    <view class="dialog-header-wrapper">
 		      <image :src="icon_refresh" class="icon-small icon-refresh" @click="onRefreshDirectory" />
-		      <text class="dialog-header">选择文档</text>
+		      <view class="doc-tab-wrapper">
+	        <text class="doc-tab" :class="{'doc-tab-active': activeDocTab === 'my'}" @click="onSwitchDocTab('my')">我的文档</text>
+	        <text class="doc-tab-separator">|</text>
+	        <text class="doc-tab" :class="{'doc-tab-active': activeDocTab === 'public'}" @click="onSwitchDocTab('public')">公共文档</text>
+	      </view>
 		      <view class="header-right-icons">
 		        <image :src="icon_create_directory" class="icon-small icon-header" @click="onShowCreateDirectory" />
 		        <image :src="icon_upload" class="icon-small icon-header" @click="onShowUpload" />
@@ -289,10 +293,30 @@
 		  <template #content>
 		    <view class="directory-wrapper">
 		      <scroll-view scroll-y class="directory-scroll" :show-scrollbar="false">
-		        <view class="directory-list module-block">
+		        <view class="directory-list module-block" v-if="activeDocTab === 'my'">
 		          <view class="directory-item directory-item-select" v-for="item in directoryList" :key="item.id">
 		            <!-- 目录名称 + 展开箭头 -->
 		            <view class="directory-info" @click="onToggleDirectory(item)">
+		              <text class="directory-name">{{ item.directory }}</text>
+		              <image class="icon-mini icon-arrow" :class="item.expand ? 'icon-rotate' : ''" :src="icon_arrow"></image>
+		            </view>
+		            <view class="doc-wrapper" v-if="item.expand && item.docList?.length">
+		              <view class="doc-item" v-for="doc in item.docList" :key="doc.id">
+		                <text class="doc-name">{{ doc.name }}</text>
+		                <checkbox
+		                  :checked="doc.checked"
+		                  :value="doc.id"
+		                  :color="PRIMARY_COLOR"
+		                  @click="checkDoc(doc)"
+		                />
+		              </view>
+		            </view>
+		          </view>
+		        </view>
+		        <view class="directory-list module-block" v-else>
+		          <view class="directory-item directory-item-select" v-for="item in publicDirectoryList" :key="item.directory">
+		            <!-- 目录名称 + 展开箭头 -->
+		            <view class="directory-info" @click="onTogglePublicDirectory(item)">
 		              <text class="directory-name">{{ item.directory }}</text>
 		              <image class="icon-mini icon-arrow" :class="item.expand ? 'icon-rotate' : ''" :src="icon_arrow"></image>
 		            </view>
@@ -424,9 +448,10 @@
       getPromptListService,
       deletePromptService,
       getTenantListService,
-	  getDocListByDirIdService,
-	  getCompanyListService,
-	  uploadDocService
+      getDocListByDirIdService,
+      getPublicDocListService,
+      getCompanyListService,
+      uploadDocService
     } from "../service";
 	import { useStore } from "../stores/useStore";
 	import uniSwipeAction from '@dcloudio/uni-ui/lib/uni-swipe-action/uni-swipe-action.vue';
@@ -474,6 +499,9 @@
 	const mDirectoryId = ref<string>("default");// 待确定选择的文件夹
 	const showDirDialog = ref<boolean>(false);// 实现上传文档的目录
 	const showCheckDocument = ref<boolean>(false);
+	const activeDocTab = ref<'my' | 'public'>('my');// 选择文档弹窗当前tab
+	const publicDirectoryList = reactive<DirectoryInterce[]>([]);// 公共文档分组列表
+	const publicDocLoaded = ref<boolean>(false);// 公共文档是否已加载
 	const promptData = ref<PromptInterface | null>(null); // 存储提示词对象
 	const directoryList = reactive<DirectoryInterce[]>([{
 		directory:"默认文件夹",
@@ -1154,6 +1182,9 @@
 	 */
 	const onSetDocument = () => {
 	  showCheckDocument.value = true;
+	  activeDocTab.value = 'my';
+	  publicDirectoryList.length = 0;
+	  publicDocLoaded.value = false;
 	  loadDirectoryList();
 	};
 
@@ -1222,7 +1253,61 @@
 	    uni.hideLoading();
 	  });
 	};
-	
+
+	/**
+	 * @description: 切换选择文档弹窗的tab
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onSwitchDocTab = (tab: 'my' | 'public') => {
+	  activeDocTab.value = tab;
+	  if (tab === 'public' && !publicDocLoaded.value) {
+	    loadPublicDocList();
+	  }
+	};
+
+	/**
+	 * @description: 加载公共文档列表并按目录分组
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const loadPublicDocList = () => {
+	  uni.showLoading({ title: '加载中...', mask: true });
+	  getPublicDocListService(store.tenantUser?.tenantId ?? "", store.company?.id ?? "").then((res) => {
+	    publicDirectoryList.length = 0;
+	    const groupMap: { [key: string]: DocumentInterface[] } = {};
+	    res.data.forEach((doc) => {
+	      const dirName = doc.directoryName || '默认文件夹';
+	      if (!groupMap[dirName]) {
+	        groupMap[dirName] = [];
+	      }
+	      groupMap[dirName].push({ ...doc, checked: checkedDocIds.includes(doc.id) });
+	    });
+	    Object.keys(groupMap).forEach((dirName) => {
+	      publicDirectoryList.push({
+	        directory: dirName,
+	        tenantId: store.tenantUser?.tenantId ?? "",
+	        expand: false,
+	        docList: groupMap[dirName]
+	      });
+	    });
+	  }).catch((err) => {
+	    console.error('加载公共文档列表失败:', err);
+	  }).finally(() => {
+	    publicDocLoaded.value = true;
+	    uni.hideLoading();
+	  });
+	};
+
+	/**
+	 * @description: 展开/折叠公共文档目录
+	 * @date: 2026-09-17
+	 * @author wuwenqiang
+	 */
+	const onTogglePublicDirectory = (item: DirectoryInterce) => {
+	  item.expand = !item.expand;
+	};
+
 	/**
 	 * @description: 打开创建文件夹对话框
 	 * @date: 2026-09-13
@@ -1492,6 +1577,11 @@
 	    type.value = '';
 	    // 重置所有文档的选中状态
 	    directoryList.forEach((dir) => {
+	        dir.docList?.forEach((doc) => {
+	            doc.checked = false;
+	        });
+	    });
+	    publicDirectoryList.forEach((dir) => {
 	        dir.docList?.forEach((doc) => {
 	            doc.checked = false;
 	        });
@@ -1810,13 +1900,17 @@
 	 */
 	const updateTempCheckedDocIds = () => {
 	  tempCheckedDocIds.length = 0;
-	  directoryList.forEach((dir) => {
-	    dir.docList?.forEach((doc) => {
-	      if (doc.checked) {
-	        tempCheckedDocIds.push(doc.id);
-	      }
+	  const collect = (list: DirectoryInterce[]) => {
+	    list.forEach((dir) => {
+	      dir.docList?.forEach((doc) => {
+	        if (doc.checked) {
+	          tempCheckedDocIds.push(doc.id);
+	        }
+	      });
 	    });
-	  });
+	  };
+	  collect(directoryList);
+	  collect(publicDirectoryList);
 	};
 
 	/**
@@ -2357,6 +2451,23 @@
 		    flex: 1;
 		    text-align: center;
 		    font-weight: bold;
+		  }
+		  .doc-tab-wrapper {
+		    flex: 1;
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    gap: @middle-padding;
+		    .doc-tab {
+		      color: @black-color;
+		      font-weight: bold;
+		      &.doc-tab-active {
+		        color: @primary-color;
+		      }
+		    }
+		    .doc-tab-separator {
+		      color: @gray-color;
+		    }
 		  }
 		  .header-right-icons {
 		    display: flex;

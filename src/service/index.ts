@@ -287,6 +287,15 @@ export const getDocListByDirIdService = (tenantId:string,directoryId:string):Pro
 }
 
 /**
+ * @description: 获取公共文档列表
+ * @date: 2026-09-17
+ * @author wuwenqiang
+ */
+export const getPublicDocListService = (tenantId:string, companyId:string):Promise<MyAwesomeData<types.DocumentInterface[]>> => {
+    return httpRequest.get<types.DocumentInterface[]>(`${api.getPublicDocList}?tenantId=${tenantId}&companyId=${companyId}`);
+}
+
+/**
  * @description: 上传文档
  * @date: 2026-09-13
  * @author wuwenqiang

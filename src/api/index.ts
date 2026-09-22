@@ -17,6 +17,7 @@ export default {
   getModelList: "/service/chat/getModelList",// ai聊天
   uploadDoc: "/service/chat/uploadDoc",// 生成向量
   getDocList: "/service/chat/getDocList",// 查询我的文档
+  getPublicDocList: "/service/chat/getPublicDocList",// 查询公共文档
   deleteDoc: "/service/chat/deleteDoc/",// 查询我的文档
   updateDocPermission: "/service/chat/updateDocPermission",// 修改文档权限
   getDirectoryList: "/service/chat/getDirectoryList",// 查询目录列表
