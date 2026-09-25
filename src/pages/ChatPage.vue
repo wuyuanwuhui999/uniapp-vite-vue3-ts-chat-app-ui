@@ -154,6 +154,7 @@
 							</picker>
 						</view>
 					</view>
+					<view class="expand"></view>
 					<view class="dialog-btn-wrapper">
 						<text class="dialog-btn dialog-btn-sure dialog-btn-active" @click="onSureUpdatePermission">确定</text>
 						<text class="dialog-btn dialog-btn-cancle" @click="onClosePermissionDialog">取消</text>

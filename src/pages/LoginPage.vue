@@ -54,7 +54,7 @@
 	import icon_password from '../../static/icon_password.png';
 	import icon_send from '../../static/icon_send.png';
 	
-	const userAccount = ref<string>('吴怨吴悔');
+	const userAccount = ref<string>('吴时吴刻');
 	const password = ref<string>('123456');
 	const tabIndex = ref<number>(0);
 	const email = ref<string>('');
